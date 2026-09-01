@@ -15,9 +15,22 @@ connectDB();
 
 const app = express();
 
+// Middleware to ensure DB connection before handling requests (crucial for serverless)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error('Database connection failed:', err);
+    res.status(500).json({ success: false, message: 'Database connection failed' });
+  }
+});
+
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    callback(null, true);
+  },
   credentials: true,
 }));
 app.use(express.json());
@@ -29,6 +42,11 @@ app.use('/api/donations', donationRoutes);
 app.use('/api/ngo', ngoRoutes);
 app.use('/api/volunteer', volunteerRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Smart Food Redistribution API is running 🚀' });
+});
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -49,7 +67,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+// Start local server if not running on Vercel
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
