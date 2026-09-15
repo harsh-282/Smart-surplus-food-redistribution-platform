@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import StatusBadge from '../../components/common/StatusBadge';
+import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
@@ -11,11 +12,13 @@ const DonationManagement = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [expiryFilter, setExpiryFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [cancellingId, setCancellingId] = useState(null);
 
   const STATUSES = ['All', 'Available', 'Accepted', 'Pickup Assigned', 'Picked Up', 'Delivered', 'Completed', 'Cancelled'];
   const CATEGORIES = ['All', 'Cooked Food', 'Raw Vegetables', 'Fruits', 'Packaged Food', 'Bakery', 'Dairy', 'Beverages', 'Other'];
+  const EXPIRY_OPTIONS = ['All', 'Fresh', 'Expiring Soon', 'Expired'];
 
   const fetchDonations = () => {
     setLoading(true);
@@ -23,6 +26,7 @@ const DonationManagement = () => {
     const params = [];
     if (statusFilter !== 'All') params.push(`status=${statusFilter}`);
     if (categoryFilter !== 'All') params.push(`category=${categoryFilter}`);
+    if (expiryFilter !== 'All') params.push(`expiryStatus=${encodeURIComponent(expiryFilter)}`);
     if (params.length > 0) {
       url += `?${params.join('&')}`;
     }
@@ -34,7 +38,7 @@ const DonationManagement = () => {
 
   useEffect(() => {
     fetchDonations();
-  }, [statusFilter, categoryFilter]);
+  }, [statusFilter, categoryFilter, expiryFilter]);
 
   const handleCancelDonation = async (id) => {
     if (!window.confirm('Are you sure you want to flag and cancel this donation?')) return;
@@ -61,7 +65,7 @@ const DonationManagement = () => {
     <div>
       <div className="page-header">
         <h1 className="page-title">Donation Management</h1>
-        <p className="page-subtitle">Track, moderate, and cancel inappropriate food donation listings.</p>
+        <p className="page-subtitle">Track, moderate, and monitor food donations across all expiry stages and logistics statuses.</p>
       </div>
 
       {/* Filters bar */}
@@ -78,7 +82,7 @@ const DonationManagement = () => {
         </div>
         <select
           className="form-control"
-          style={{ width: 'auto', minWidth: 150 }}
+          style={{ width: 'auto', minWidth: 140 }}
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
         >
@@ -87,12 +91,21 @@ const DonationManagement = () => {
         </select>
         <select
           className="form-control"
-          style={{ width: 'auto', minWidth: 150 }}
+          style={{ width: 'auto', minWidth: 140 }}
           value={categoryFilter}
           onChange={e => setCategoryFilter(e.target.value)}
         >
           <option value="All">All Categories</option>
           {CATEGORIES.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select
+          className="form-control"
+          style={{ width: 'auto', minWidth: 140 }}
+          value={expiryFilter}
+          onChange={e => setExpiryFilter(e.target.value)}
+        >
+          <option value="All">All Expiry States</option>
+          {EXPIRY_OPTIONS.slice(1).map(exp => <option key={exp} value={exp}>{exp}</option>)}
         </select>
       </div>
 
@@ -112,8 +125,8 @@ const DonationManagement = () => {
                 <th>Quantity</th>
                 <th>Donor</th>
                 <th>NGO</th>
-                <th>Volunteer</th>
-                <th>Status</th>
+                <th>Expiry & Time Left</th>
+                <th>Workflow Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -128,7 +141,12 @@ const DonationManagement = () => {
                   <td>{d.quantity}</td>
                   <td>{d.donorId?.name}</td>
                   <td>{d.acceptedBy?.name || <span className="text-muted">—</span>}</td>
-                  <td>{d.volunteerId?.name || <span className="text-muted">—</span>}</td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formatDate(d.expiryDate)}</span>
+                      <ExpiryBadge expiryDate={d.expiryDate} showTime={true} />
+                    </div>
+                  </td>
                   <td><StatusBadge status={d.status} /></td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.4rem' }}>

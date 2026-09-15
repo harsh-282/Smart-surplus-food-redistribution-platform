@@ -40,7 +40,14 @@ const AddDonation = () => {
     if (!form.foodName || !form.quantity || !form.preparationDate || !form.expiryDate || !form.pickupAddress) {
       setError('Please fill all required fields.'); return;
     }
-    if (new Date(form.expiryDate) <= new Date(form.preparationDate)) {
+    const exp = new Date(form.expiryDate);
+    const prep = new Date(form.preparationDate);
+    const now = new Date();
+
+    if (exp <= now) {
+      setError('Expiry date must be in the future.'); return;
+    }
+    if (exp <= prep) {
       setError('Expiry date must be after preparation date.'); return;
     }
 
@@ -114,11 +121,25 @@ const AddDonation = () => {
           <div className="grid-2" style={{ gap: '1rem' }}>
             <div className="form-group">
               <label className="form-label">Preparation Date & Time *</label>
-              <input type="datetime-local" name="preparationDate" className="form-control" value={form.preparationDate} onChange={handleChange} required />
+              <input
+                type="datetime-local"
+                name="preparationDate"
+                className="form-control"
+                value={form.preparationDate}
+                onChange={handleChange}
+                required
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Expiry Date & Time *</label>
-              <input type="datetime-local" name="expiryDate" className="form-control" value={form.expiryDate} onChange={handleChange} required />
+              <input
+                type="datetime-local"
+                name="expiryDate"
+                className="form-control"
+                value={form.expiryDate}
+                onChange={handleChange}
+                required
+              />
             </div>
           </div>
 

@@ -130,11 +130,15 @@ const seedData = async () => {
 
   // Donation dates helper
   const now = new Date();
-  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate() + 1);
-  const dayAfter = new Date(now); dayAfter.setDate(dayAfter.getDate() + 2);
-  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+  const twoDaysLater = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+  const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  const in5Hours = new Date(now.getTime() + 5 * 60 * 60 * 1000);
+  const in12Hours = new Date(now.getTime() + 12 * 60 * 60 * 1000);
+  const threeHoursAgo = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
 
-  // Donation 1 - Available
+  // 1. Fresh Food - Available (Expiry > 24h away)
   await Donation.create({
     donorId: donor1._id,
     foodName: 'Rice and Sambar',
@@ -142,82 +146,94 @@ const seedData = async () => {
     quantity: '50 portions',
     image: { url: '/rice-sambar.jpg', publicId: 'local_rice_sambar' },
     preparationDate: now,
-    expiryDate: tomorrow,
+    expiryDate: twoDaysLater,
     pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
-    description: 'Freshly prepared rice, sambar and vegetables. Available for immediate pickup.',
+    description: 'Freshly prepared rice, sambar and vegetables. Stored safely.',
     status: 'Available',
   });
 
-  // Donation 2 - Available
+  // 2. Expiring Soon Food - Available (Expiry in 5 hours) -> Highlighted in NGO view!
   await Donation.create({
     donorId: donor1._id,
     foodName: 'Idli and Chutney',
     category: 'Cooked Food',
     quantity: '80 pieces',
     image: { url: '/idli-chutney.jpg', publicId: 'local_idli_chutney' },
-    preparationDate: now,
-    expiryDate: tomorrow,
+    preparationDate: new Date(now.getTime() - 2 * 60 * 60 * 1000),
+    expiryDate: in5Hours,
     pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
-    description: 'Morning breakfast idlis with coconut chutney.',
+    description: 'Fresh breakfast idlis with coconut chutney. Best consumed within 5 hours.',
     status: 'Available',
   });
 
-  // Donation 3 - Accepted by NGO1
-  const d3 = await Donation.create({
+  // 3. Expiring Soon Food - Available (Expiry in 12 hours)
+  await Donation.create({
     donorId: donor2._id,
-    foodName: 'Biriyani',
+    foodName: 'Vegetable Biryani & Raita',
+    category: 'Cooked Food',
+    quantity: '60 plates',
+    image: { url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food/fish-vegetables.jpg', publicId: 'sample_biryani' },
+    preparationDate: new Date(now.getTime() - 3 * 60 * 60 * 1000),
+    expiryDate: in12Hours,
+    pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
+    description: 'Wedding buffet surplus biryani with cooling raita.',
+    status: 'Available',
+  });
+
+  // 4. Expired Food - Available in records (Expiry 3 hours ago) -> Hidden from NGO available, visible to Donor/Admin
+  await Donation.create({
+    donorId: donor1._id,
+    foodName: 'Cut Fruit Platter',
+    category: 'Fruits',
+    quantity: '20 boxes',
+    image: { url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food/fish-vegetables.jpg', publicId: 'sample_fruits' },
+    preparationDate: yesterday,
+    expiryDate: threeHoursAgo,
+    pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
+    description: 'Surplus morning fruit salads and slices.',
+    status: 'Available',
+  });
+
+  // 5. Accepted by NGO1 (Expiring Soon - needs urgent pickup)
+  await Donation.create({
+    donorId: donor2._id,
+    foodName: 'Wedding Meal Surplus',
     category: 'Cooked Food',
     quantity: '100 plates',
     image: { url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food/fish-vegetables.jpg', publicId: 'sample3' },
     preparationDate: yesterday,
-    expiryDate: now,
+    expiryDate: in5Hours,
     pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
-    description: 'Wedding ceremony surplus biriyani. Must be picked up within 2 hours.',
+    description: 'Wedding ceremony surplus. Must be picked up promptly.',
     status: 'Accepted',
     acceptedBy: ngoUser1._id,
   });
 
-  // Donation 4 - Pickup Assigned (volunteer1)
+  // 6. Pickup Assigned (volunteer1) - Fresh
   await Donation.create({
     donorId: donor2._id,
-    foodName: 'Fruit Salad',
-    category: 'Fruits',
-    quantity: '30 kg',
-    image: { url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food/fish-vegetables.jpg', publicId: 'sample4' },
+    foodName: 'Assorted Bakery Bread & Rolls',
+    category: 'Bakery',
+    quantity: '40 packs',
+    image: { url: '/bread-jam.jpg', publicId: 'local_bread_jam' },
     preparationDate: yesterday,
-    expiryDate: tomorrow,
+    expiryDate: threeDaysLater,
     pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
-    description: 'Assorted fresh fruits from the wedding ceremony.',
+    description: 'Packaged whole wheat bread and bakery buns.',
     status: 'Pickup Assigned',
     acceptedBy: ngoUser2._id,
     volunteerId: volUser1._id,
   });
 
-  // Donation 5 - Picked Up
-  await Donation.create({
-    donorId: donor1._id,
-    foodName: 'Bread and Jam',
-    category: 'Bakery',
-    quantity: '60 packs',
-    image: { url: '/bread-jam.jpg', publicId: 'local_bread_jam' },
-    preparationDate: yesterday,
-    expiryDate: dayAfter,
-    pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
-    description: 'Factory surplus bread packs.',
-    status: 'Picked Up',
-    acceptedBy: ngoUser1._id,
-    volunteerId: volUser2._id,
-  });
-
-  // Donation 6 - Completed
+  // 7. Completed - Delivered earlier
   await Donation.create({
     donorId: donor2._id,
     foodName: 'Vegetables Mix',
     category: 'Raw Vegetables',
     quantity: '25 kg',
     image: { url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food/fish-vegetables.jpg', publicId: 'sample6' },
-    preparationDate: yesterday,
-    expiryDate: dayAfter,
+    preparationDate: twoDaysAgo,
+    expiryDate: yesterday,
     pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
     description: 'Fresh mixed vegetables - carrots, beans, and potatoes.',
     status: 'Completed',

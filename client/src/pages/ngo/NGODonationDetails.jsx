@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import StatusBadge from '../../components/common/StatusBadge';
+import ExpiryBadge from '../../components/common/ExpiryBadge';
+import { getExpiryInfo } from '../../utils/expiryHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
@@ -33,6 +35,8 @@ const NGODonationDetails = () => {
   const handleAccept = async () => {
     if (!window.confirm('Accept this donation?')) return;
     setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
     try {
       const res = await api.put(`/donations/${id}/accept`);
       setDonation(res.data.donation);
@@ -75,6 +79,8 @@ const NGODonationDetails = () => {
     );
   }
 
+  const expiryInfo = getExpiryInfo(donation.expiryDate);
+
   return (
     <div>
       <button onClick={() => navigate(-1)} className="back-btn">← Back</button>
@@ -83,6 +89,24 @@ const NGODonationDetails = () => {
         <h1 className="page-title">{donation.foodName}</h1>
         <p className="page-subtitle">Redistribution detail, status updates, and logistics coordination.</p>
       </div>
+
+      {expiryInfo.isExpiringSoon && donation.status === 'Available' && (
+        <div className="detail-expiry-alert soon">
+          <span>⚡</span>
+          <div>
+            <strong>High Priority:</strong> This food donation is expiring soon ({expiryInfo.timeLeft}). Please accept and coordinate delivery promptly.
+          </div>
+        </div>
+      )}
+
+      {expiryInfo.isExpired && donation.status === 'Available' && (
+        <div className="detail-expiry-alert expired">
+          <span>⌛</span>
+          <div>
+            <strong>Donation Expired:</strong> This food donation expired ({expiryInfo.timeLeft}) and can no longer be accepted.
+          </div>
+        </div>
+      )}
 
       {successMsg && <div className="alert alert-success">{successMsg}</div>}
       {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
@@ -96,9 +120,12 @@ const NGODonationDetails = () => {
             <div className="detail-img-placeholder">🍲</div>
           )}
           <div className="detail-body">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Donation Information</h2>
-              <StatusBadge status={donation.status} />
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <StatusBadge status={donation.status} />
+                <ExpiryBadge expiryDate={donation.expiryDate} />
+              </div>
             </div>
 
             <div className="detail-grid">
@@ -106,6 +133,12 @@ const NGODonationDetails = () => {
               <div className="detail-field"><label>Quantity</label><p>⚖️ {donation.quantity}</p></div>
               <div className="detail-field"><label>Prepared At</label><p>{formatDateTime(donation.preparationDate)}</p></div>
               <div className="detail-field"><label>Expiry Time</label><p>{formatDateTime(donation.expiryDate)}</p></div>
+              <div className="detail-field" style={{ gridColumn: '1/-1' }}>
+                <label>Expiry Countdown & Status</label>
+                <div style={{ marginTop: '0.25rem' }}>
+                  <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} />
+                </div>
+              </div>
               <div className="detail-field" style={{ gridColumn: '1/-1' }}><label>Pickup Location</label><p>📍 {donation.pickupAddress}</p></div>
               {donation.description && (
                 <div className="detail-field" style={{ gridColumn: '1/-1' }}><label>Description</label><p>{donation.description}</p></div>
@@ -131,8 +164,16 @@ const NGODonationDetails = () => {
 
           {donation.status === 'Available' && (
             <div>
-              <p className="text-muted mb-2">This donation is currently available. Accept it first to assign a volunteer.</p>
-              <button onClick={handleAccept} className="btn btn-primary btn-block">Accept Donation</button>
+              {expiryInfo.isExpired ? (
+                <div className="alert alert-error" style={{ margin: 0 }}>
+                  ⚠️ This food donation has expired and cannot be accepted.
+                </div>
+              ) : (
+                <>
+                  <p className="text-muted mb-2">This donation is currently available. Accept it first to assign a volunteer.</p>
+                  <button onClick={handleAccept} className="btn btn-primary btn-block">Accept Donation</button>
+                </>
+              )}
             </div>
           )}
 

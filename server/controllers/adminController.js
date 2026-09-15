@@ -94,10 +94,22 @@ const toggleUserStatus = async (req, res) => {
 // @access  Admin
 const getAllDonations = async (req, res) => {
   try {
-    const { status, category } = req.query;
+    const { status, category, expiryStatus } = req.query;
     const filter = {};
     if (status) filter.status = status;
     if (category) filter.category = category;
+
+    if (expiryStatus) {
+      const now = new Date();
+      const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      if (expiryStatus === 'Fresh') {
+        filter.expiryDate = { $gt: next24h };
+      } else if (expiryStatus === 'Expiring Soon') {
+        filter.expiryDate = { $gt: now, $lte: next24h };
+      } else if (expiryStatus === 'Expired') {
+        filter.expiryDate = { $lte: now };
+      }
+    }
 
     const donations = await Donation.find(filter)
       .populate('donorId', 'name email phone')

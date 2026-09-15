@@ -24,7 +24,13 @@ const AvailableDonations = () => {
       url += `&search=${encodeURIComponent(search)}`;
     }
     api.get(url)
-      .then(res => setDonations(res.data.donations))
+      .then(res => {
+        // Backend filters out expired donations; client safeguard ensures none slip through
+        const validDonations = (res.data.donations || []).filter(
+          d => new Date(d.expiryDate).getTime() > Date.now()
+        );
+        setDonations(validDonations);
+      })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
   };
@@ -49,17 +55,33 @@ const AvailableDonations = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to accept donation.');
+      // Refresh list to eliminate any expired records
+      fetchDonations();
     } finally {
       setAccepting(null);
     }
   };
 
+  const expiringSoonCount = donations.filter(d => {
+    const diff = new Date(d.expiryDate).getTime() - Date.now();
+    return diff > 0 && diff <= 24 * 60 * 60 * 1000;
+  }).length;
+
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">Available Donations</h1>
-        <p className="page-subtitle">Browse and accept available food donations from nearby donors.</p>
+        <p className="page-subtitle">Browse and accept available fresh food donations from nearby donors.</p>
       </div>
+
+      {expiringSoonCount > 0 && (
+        <div className="detail-expiry-alert soon" style={{ marginBottom: '1.5rem' }}>
+          <span>⚡</span>
+          <div>
+            <strong>Action Needed:</strong> {expiringSoonCount} {expiringSoonCount === 1 ? 'donation is' : 'donations are'} <strong>Expiring Soon</strong> (within 24 hours). Please prioritize accepting them!
+          </div>
+        </div>
+      )}
 
       {message && <div className="alert alert-success">{message}</div>}
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import StatusBadge from '../../components/common/StatusBadge';
+import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
@@ -42,9 +43,9 @@ const AcceptedDonations = () => {
                 <th>Category</th>
                 <th>Quantity</th>
                 <th>Donor</th>
-                <th>Pickup Address</th>
+                <th>Expiry & Time Left</th>
                 <th>Volunteer Assigned</th>
-                <th>Status</th>
+                <th>Workflow Status</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -55,7 +56,12 @@ const AcceptedDonations = () => {
                   <td>{d.category}</td>
                   <td>{d.quantity}</td>
                   <td>{d.donorId?.name}</td>
-                  <td>{d.pickupAddress?.slice(0, 30)}{d.pickupAddress?.length > 30 ? '...' : ''}</td>
+                  <td>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formatDate(d.expiryDate)}</span>
+                      <ExpiryBadge expiryDate={d.expiryDate} showTime={true} />
+                    </div>
+                  </td>
                   <td>
                     {d.volunteerId ? (
                       <strong>{d.volunteerId.name}</strong>

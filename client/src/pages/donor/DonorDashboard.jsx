@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import StatCard from '../../components/common/StatCard';
 import StatusBadge from '../../components/common/StatusBadge';
+import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
@@ -78,7 +79,7 @@ const DonorDashboard = () => {
                   <th>Food Name</th>
                   <th>Category</th>
                   <th>Quantity</th>
-                  <th>Expiry</th>
+                  <th>Expiry & Time Left</th>
                   <th>Status</th>
                   <th>Action</th>
                 </tr>
@@ -89,7 +90,12 @@ const DonorDashboard = () => {
                     <td><strong>{d.foodName}</strong></td>
                     <td>{d.category}</td>
                     <td>{d.quantity}</td>
-                    <td>{formatDate(d.expiryDate)}</td>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formatDate(d.expiryDate)}</span>
+                        <ExpiryBadge expiryDate={d.expiryDate} showTime={true} />
+                      </div>
+                    </td>
                     <td><StatusBadge status={d.status} /></td>
                     <td><Link to={`/donor/donations/${d._id}`} className="btn btn-secondary btn-sm">View</Link></td>
                   </tr>

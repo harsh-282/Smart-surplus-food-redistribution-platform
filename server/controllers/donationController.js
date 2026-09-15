@@ -1,5 +1,6 @@
 const Donation = require('../models/Donation');
 const cloudinary = require('../config/cloudinary');
+const { isExpired } = require('../utils/expiryHelper');
 
 // @desc    Create a donation
 // @route   POST /api/donations
@@ -7,6 +8,26 @@ const cloudinary = require('../config/cloudinary');
 const createDonation = async (req, res) => {
   try {
     const { foodName, category, quantity, preparationDate, expiryDate, pickupAddress, description } = req.body;
+
+    if (!foodName || !category || !quantity || !preparationDate || !expiryDate || !pickupAddress) {
+      return res.status(400).json({ success: false, message: 'Please provide all required fields.' });
+    }
+
+    const prepDate = new Date(preparationDate);
+    const expDate = new Date(expiryDate);
+    const now = new Date();
+
+    if (isNaN(prepDate.getTime()) || isNaN(expDate.getTime())) {
+      return res.status(400).json({ success: false, message: 'Invalid preparation or expiry date.' });
+    }
+
+    if (expDate <= now) {
+      return res.status(400).json({ success: false, message: 'Expiry date must be in the future.' });
+    }
+
+    if (expDate <= prepDate) {
+      return res.status(400).json({ success: false, message: 'Expiry date must be after preparation date.' });
+    }
 
     let imageData = { url: '', publicId: '' };
 
@@ -24,8 +45,8 @@ const createDonation = async (req, res) => {
       category,
       quantity,
       image: imageData,
-      preparationDate,
-      expiryDate,
+      preparationDate: prepDate,
+      expiryDate: expDate,
       pickupAddress,
       description,
     });
@@ -66,6 +87,11 @@ const getDonations = async (req, res) => {
       if (!status) {
         filter.status = 'Available';
       }
+    }
+
+    // Hide expired food from NGO available donation listings and any available queries
+    if (filter.status === 'Available' || (req.user.role === 'ngo' && !status)) {
+      filter.expiryDate = { $gt: new Date() };
     }
 
     // Volunteers see assigned to them
@@ -118,6 +144,14 @@ const acceptDonation = async (req, res) => {
 
     if (donation.status !== 'Available') {
       return res.status(400).json({ success: false, message: `Donation is already ${donation.status}.` });
+    }
+
+    // Check if donation has expired before allowing acceptance
+    if (isExpired(donation.expiryDate)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Sorry, this food donation has expired and can no longer be accepted.',
+      });
     }
 
     donation.status = 'Accepted';

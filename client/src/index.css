@@ -328,6 +328,42 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .badge-volunteer { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
 .badge-admin { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
 
+/* Expiry Badges */
+.badge-expiry-fresh {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.badge-expiry-soon {
+  background: rgba(249, 115, 22, 0.18);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.2);
+  animation: pulse-border 2s infinite;
+}
+
+.badge-expiry-expired {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.badge-time-text {
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.95;
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    box-shadow: 0 0 6px rgba(249, 115, 22, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
+  }
+}
+
 /* ======================================================
    NAVBAR
    ====================================================== */
@@ -530,6 +566,58 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 .donation-card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
 .donation-card-meta { font-size: 0.8rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.3rem; }
 .donation-card-footer { padding: 0.875rem 1.25rem; border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; }
+
+/* Expiring Soon Card Highlight */
+.donation-card.donation-card-expiring-soon {
+  border-color: rgba(249, 115, 22, 0.6);
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.15);
+  position: relative;
+}
+
+.donation-card.donation-card-expiring-soon:hover {
+  border-color: #f97316;
+  box-shadow: 0 0 24px rgba(249, 115, 22, 0.3);
+}
+
+.donation-card-expiring-banner {
+  background: linear-gradient(90deg, rgba(249, 115, 22, 0.9), rgba(234, 88, 12, 0.9));
+  color: #ffffff;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  letter-spacing: 0.02em;
+}
+
+.donation-card-expired {
+  opacity: 0.75;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.detail-expiry-alert {
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.detail-expiry-alert.soon {
+  background: rgba(249, 115, 22, 0.15);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  color: #fb923c;
+}
+
+.detail-expiry-alert.expired {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
 
 /* ======================================================
    TABLE

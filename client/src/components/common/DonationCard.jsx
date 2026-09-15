@@ -1,4 +1,6 @@
 import StatusBadge from './StatusBadge';
+import ExpiryBadge from './ExpiryBadge';
+import { getExpiryInfo } from '../../utils/expiryHelper';
 import { Link } from 'react-router-dom';
 
 const CATEGORY_EMOJI = {
@@ -21,9 +23,24 @@ const formatDate = (dateStr) => {
 
 const DonationCard = ({ donation, detailLink, actionButton }) => {
   const emoji = CATEGORY_EMOJI[donation.category] || '🍽️';
+  const expiryInfo = getExpiryInfo(donation.expiryDate);
+
+  let cardClasses = 'donation-card';
+  if (expiryInfo.isExpiringSoon) {
+    cardClasses += ' donation-card-expiring-soon';
+  } else if (expiryInfo.isExpired) {
+    cardClasses += ' donation-card-expired';
+  }
 
   return (
-    <div className="donation-card">
+    <div className={cardClasses}>
+      {expiryInfo.isExpiringSoon && (
+        <div className="donation-card-expiring-banner">
+          <span>⚡ EXPIRING SOON</span>
+          <span>{expiryInfo.timeLeft}</span>
+        </div>
+      )}
+
       {donation.image?.url ? (
         <img
           src={donation.image.url}
@@ -49,7 +66,10 @@ const DonationCard = ({ donation, detailLink, actionButton }) => {
           <span>📂 {donation.category}</span>
           <span>⚖️ {donation.quantity}</span>
           <span>📍 {donation.pickupAddress?.slice(0, 50)}{donation.pickupAddress?.length > 50 ? '...' : ''}</span>
-          <span>⏰ Expires: {formatDate(donation.expiryDate)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', margin: '0.2rem 0' }}>
+            <span>⏰ Expiry:</span>
+            <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} />
+          </div>
           {donation.donorId?.name && <span>👤 By: {donation.donorId.name}</span>}
         </div>
       </div>

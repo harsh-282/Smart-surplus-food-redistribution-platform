@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import StatusBadge from '../../components/common/StatusBadge';
+import ExpiryBadge from '../../components/common/ExpiryBadge';
+import { getExpiryInfo } from '../../utils/expiryHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
@@ -44,14 +46,34 @@ const AdminDonationDetails = () => {
     );
   }
 
+  const expiryInfo = getExpiryInfo(donation.expiryDate);
+
   return (
     <div>
       <button onClick={() => navigate(-1)} className="back-btn">← Back to Management</button>
 
       <div className="page-header">
         <h1 className="page-title">Donation Audit Detail</h1>
-        <p className="page-subtitle">Detailed log audit for safety, quality control, and logistics monitoring.</p>
+        <p className="page-subtitle">Detailed log audit for safety, quality control, expiry tracking, and logistics monitoring.</p>
       </div>
+
+      {expiryInfo.isExpiringSoon && (
+        <div className="detail-expiry-alert soon">
+          <span>⚡</span>
+          <div>
+            <strong>Expiring Soon Audit:</strong> This food donation is within 24 hours of expiry ({expiryInfo.timeLeft}).
+          </div>
+        </div>
+      )}
+
+      {expiryInfo.isExpired && (
+        <div className="detail-expiry-alert expired">
+          <span>⌛</span>
+          <div>
+            <strong>Expired Listing:</strong> This food donation expired ({expiryInfo.timeLeft}).
+          </div>
+        </div>
+      )}
 
       <div className="grid-2" style={{ alignItems: 'flex-start', gap: '1.5rem' }}>
         {/* Left: General info */}
@@ -64,7 +86,10 @@ const AdminDonationDetails = () => {
           <div className="detail-body">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Listing Information</h2>
-              <StatusBadge status={donation.status} />
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <StatusBadge status={donation.status} />
+                <ExpiryBadge expiryDate={donation.expiryDate} />
+              </div>
             </div>
 
             <div className="detail-grid">
@@ -72,6 +97,12 @@ const AdminDonationDetails = () => {
               <div className="detail-field"><label>Quantity</label><p>⚖️ {donation.quantity}</p></div>
               <div className="detail-field"><label>Prepared At</label><p>{formatDateTime(donation.preparationDate)}</p></div>
               <div className="detail-field"><label>Expiry Time</label><p>{formatDateTime(donation.expiryDate)}</p></div>
+              <div className="detail-field" style={{ gridColumn: '1/-1' }}>
+                <label>Expiry Countdown & Status</label>
+                <div style={{ marginTop: '0.25rem' }}>
+                  <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} />
+                </div>
+              </div>
               <div className="detail-field" style={{ gridColumn: '1/-1' }}><label>Pickup Address</label><p>📍 {donation.pickupAddress}</p></div>
               {donation.description && (
                 <div className="detail-field" style={{ gridColumn: '1/-1' }}><label>Description</label><p>{donation.description}</p></div>
