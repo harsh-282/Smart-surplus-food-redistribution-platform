@@ -9,6 +9,9 @@ const donationRoutes = require('./routes/donationRoutes');
 const ngoRoutes = require('./routes/ngoRoutes');
 const volunteerRoutes = require('./routes/volunteerRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
+const trackingRoutes = require('./routes/trackingRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -42,6 +45,9 @@ app.use('/api/donations', donationRoutes);
 app.use('/api/ngo', ngoRoutes);
 app.use('/api/volunteer', volunteerRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/tracking', trackingRoutes);
 
 // Root route
 app.get('/', (req, res) => {

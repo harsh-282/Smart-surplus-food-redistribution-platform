@@ -5,6 +5,9 @@ import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
 import { getExpiryInfo } from '../../utils/expiryHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import FeedbackSection from '../../components/common/FeedbackSection';
+import GoogleMapView from '../../components/common/GoogleMapView';
+import LiveTrackerControls from '../../components/common/LiveTrackerControls';
 
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
 
@@ -25,6 +28,7 @@ const DonationDetails = () => {
   const [donation, setDonation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [trackingInfo, setTrackingInfo] = useState(null);
 
   useEffect(() => {
     api.get(`/donations/${id}`).then(res => setDonation(res.data.donation)).catch(console.error).finally(() => setLoading(false));
@@ -152,6 +156,31 @@ const DonationDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Live Delivery Tracking Map */}
+      {['Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'].includes(donation.status) && (
+        <>
+          <LiveTrackerControls
+            donationId={donation._id}
+            donationStatus={donation.status}
+            isVolunteer={false}
+            onTrackingChange={setTrackingInfo}
+          />
+          <GoogleMapView
+            pickupAddress={donation.pickupAddress || donation.donorId?.address}
+            pickupCoords={donation.pickupCoordinates || donation.donorId?.locationCoordinates}
+            destinationAddress={donation.acceptedBy?.address}
+            destinationCoords={donation.acceptedBy?.locationCoordinates}
+            volunteerCoords={trackingInfo?.location}
+            trackingActive={Boolean(trackingInfo?.trackingActive)}
+            isStale={Boolean(trackingInfo?.isStale)}
+            lastUpdatedAt={trackingInfo?.lastUpdatedAt}
+          />
+        </>
+      )}
+
+      {/* Ratings & Community Feedback */}
+      <FeedbackSection donation={donation} />
     </div>
   );
 };

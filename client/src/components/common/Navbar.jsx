@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -50,6 +51,7 @@ const Navbar = () => {
           </button>
           {user ? (
             <>
+              <NotificationBell />
               <div style={{ textAlign: 'right', display: 'none' }} className="user-info">
                 <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>{user.name}</div>
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{user.role}</div>

@@ -5,6 +5,7 @@ import api from '../../services/api';
 import StatCard from '../../components/common/StatCard';
 import StatusBadge from '../../components/common/StatusBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import RouteDistanceCard from '../../components/common/RouteDistanceCard';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
 
@@ -65,7 +66,7 @@ const VolunteerDashboard = () => {
         <Link to="/volunteer/profile" className="btn btn-secondary btn-sm">Change Availability</Link>
       </div>
 
-      {/* Pending Deliveries */}
+      {/* Pending Deliveries with Route & Distance */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h2 style={{ fontWeight: 700, fontSize: '1.1rem' }}>Active Deliveries ({pendingDeliveries.length})</h2>
@@ -79,33 +80,33 @@ const VolunteerDashboard = () => {
             <div className="empty-state-desc">You don't have any pending delivery tasks. Make sure your profile availability is set to "Available".</div>
           </div>
         ) : (
-          <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Food</th>
-                  <th>NGO</th>
-                  <th>Quantity</th>
-                  <th>Pickup Address</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingDeliveries.map(d => (
-                  <tr key={d._id}>
-                    <td><strong>{d.foodName}</strong></td>
-                    <td>{d.acceptedBy?.name}</td>
-                    <td>{d.quantity}</td>
-                    <td>{d.pickupAddress?.slice(0, 30)}{d.pickupAddress?.length > 30 ? '...' : ''}</td>
-                    <td><StatusBadge status={d.status} /></td>
-                    <td>
-                      <Link to={`/volunteer/deliveries/${d._id}`} className="btn btn-primary btn-sm">Update Status</Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {pendingDeliveries.map(d => (
+              <div key={d._id} className="card" style={{ border: '1px solid var(--border-color, #e2e8f0)', padding: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: '0 0 0.25rem 0' }}>{d.foodName}</h3>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Quantity: {d.quantity} | Category: {d.category}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <StatusBadge status={d.status} />
+                    <Link to={`/volunteer/deliveries/${d._id}`} className="btn btn-primary btn-sm">
+                      View Task & Update Status
+                    </Link>
+                  </div>
+                </div>
+
+                <RouteDistanceCard
+                  pickupAddress={d.pickupAddress || d.donorId?.address}
+                  pickupCoords={d.pickupCoordinates || d.donorId?.locationCoordinates}
+                  destinationAddress={d.acceptedBy?.address}
+                  destinationCoords={d.acceptedBy?.locationCoordinates}
+                  donorName={d.donorId?.name || 'Donor'}
+                  ngoName={d.acceptedBy?.name || 'NGO'}
+                  compact={true}
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>

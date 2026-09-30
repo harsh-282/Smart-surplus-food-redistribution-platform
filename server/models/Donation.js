@@ -40,6 +40,10 @@ const donationSchema = new mongoose.Schema(
       required: [true, 'Pickup address is required'],
       trim: true,
     },
+    pickupCoordinates: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+    },
     description: {
       type: String,
       trim: true,

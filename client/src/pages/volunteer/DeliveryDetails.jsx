@@ -4,6 +4,10 @@ import api from '../../services/api';
 import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import FeedbackSection from '../../components/common/FeedbackSection';
+import RouteDistanceCard from '../../components/common/RouteDistanceCard';
+import GoogleMapView from '../../components/common/GoogleMapView';
+import LiveTrackerControls from '../../components/common/LiveTrackerControls';
 
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
 
@@ -15,6 +19,8 @@ const DeliveryDetails = () => {
   const [updating, setUpdating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const [trackingInfo, setTrackingInfo] = useState(null);
 
   useEffect(() => {
     api.get(`/donations/${id}`)
@@ -110,6 +116,7 @@ const DeliveryDetails = () => {
                 <label>NGO (Destination Location)</label>
                 <p>🏢 <strong>{donation.acceptedBy?.name}</strong></p>
                 <p>📞 Phone: <a href={`tel:${donation.acceptedBy?.phone}`}>{donation.acceptedBy?.phone}</a></p>
+                <p>📍 Address: {donation.acceptedBy?.address || 'NGO address not specified'}</p>
               </div>
             </div>
           </div>
@@ -171,6 +178,39 @@ const DeliveryDetails = () => {
           )}
         </div>
       </div>
+
+      {/* Live GPS Tracking Controls for Volunteer */}
+      <LiveTrackerControls
+        donationId={donation._id}
+        donationStatus={donation.status}
+        isVolunteer={true}
+        onTrackingChange={setTrackingInfo}
+      />
+
+      {/* Google Maps View with Live Volunteer Marker */}
+      <GoogleMapView
+        pickupAddress={donation.pickupAddress || donation.donorId?.address}
+        pickupCoords={donation.pickupCoordinates || donation.donorId?.locationCoordinates}
+        destinationAddress={donation.acceptedBy?.address}
+        destinationCoords={donation.acceptedBy?.locationCoordinates}
+        volunteerCoords={trackingInfo?.location}
+        trackingActive={Boolean(trackingInfo?.trackingActive)}
+        isStale={Boolean(trackingInfo?.isStale)}
+        lastUpdatedAt={trackingInfo?.lastUpdatedAt}
+      />
+
+      {/* Route, Distance & Navigation Options */}
+      <RouteDistanceCard
+        pickupAddress={donation.pickupAddress || donation.donorId?.address}
+        pickupCoords={donation.pickupCoordinates || donation.donorId?.locationCoordinates}
+        destinationAddress={donation.acceptedBy?.address}
+        destinationCoords={donation.acceptedBy?.locationCoordinates}
+        donorName={donation.donorId?.name || 'Donor'}
+        ngoName={donation.acceptedBy?.name || 'NGO'}
+      />
+
+      {/* Ratings & Feedback */}
+      <FeedbackSection donation={donation} />
     </div>
   );
 };

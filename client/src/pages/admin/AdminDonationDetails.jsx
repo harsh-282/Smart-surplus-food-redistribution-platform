@@ -5,6 +5,10 @@ import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
 import { getExpiryInfo } from '../../utils/expiryHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import FeedbackSection from '../../components/common/FeedbackSection';
+import SmartVolunteerSelector from '../../components/common/SmartVolunteerSelector';
+import GoogleMapView from '../../components/common/GoogleMapView';
+import LiveTrackerControls from '../../components/common/LiveTrackerControls';
 
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
 
@@ -14,6 +18,7 @@ const AdminDonationDetails = () => {
   const [donation, setDonation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [trackingInfo, setTrackingInfo] = useState(null);
 
   useEffect(() => {
     api.get(`/donations/${id}`)
@@ -146,13 +151,29 @@ const AdminDonationDetails = () => {
           <p className="text-muted text-sm mb-2">As an admin, you can moderate inappropriate donations or cancel ongoing logistics if they do not meet food safety standards.</p>
 
           {!['Cancelled', 'Completed', 'Delivered'].includes(donation.status) ? (
-            <button
-              onClick={handleCancel}
-              className="btn btn-danger btn-block btn-lg"
-              disabled={cancelling}
-            >
-              {cancelling ? 'Cancelling...' : '🚨 Flag & Cancel Donation'}
-            </button>
+            <div>
+              <button
+                onClick={handleCancel}
+                className="btn btn-danger btn-block btn-lg"
+                disabled={cancelling}
+                style={{ marginBottom: '1.25rem' }}
+              >
+                {cancelling ? 'Cancelling...' : '🚨 Flag & Cancel Donation'}
+              </button>
+
+              {donation.status === 'Accepted' && (
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color, #e2e8f0)' }}>
+                  <h4 style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.75rem' }}>🚴 Admin Smart Volunteer Assignment</h4>
+                  <SmartVolunteerSelector
+                    donationId={donation._id}
+                    donation={donation}
+                    onAssigned={(updatedDonation) => {
+                      setDonation(updatedDonation);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           ) : donation.status === 'Cancelled' ? (
             <div className="alert alert-error" style={{ margin: 0 }}>
               ⚠️ This listing has been Cancelled/Flagged.
@@ -164,6 +185,31 @@ const AdminDonationDetails = () => {
           )}
         </div>
       </div>
+
+      {/* Admin Audit Live Tracking Map */}
+      {['Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'].includes(donation.status) && (
+        <>
+          <LiveTrackerControls
+            donationId={donation._id}
+            donationStatus={donation.status}
+            isVolunteer={false}
+            onTrackingChange={setTrackingInfo}
+          />
+          <GoogleMapView
+            pickupAddress={donation.pickupAddress || donation.donorId?.address}
+            pickupCoords={donation.pickupCoordinates || donation.donorId?.locationCoordinates}
+            destinationAddress={donation.acceptedBy?.address}
+            destinationCoords={donation.acceptedBy?.locationCoordinates}
+            volunteerCoords={trackingInfo?.location}
+            trackingActive={Boolean(trackingInfo?.trackingActive)}
+            isStale={Boolean(trackingInfo?.isStale)}
+            lastUpdatedAt={trackingInfo?.lastUpdatedAt}
+          />
+        </>
+      )}
+
+      {/* Ratings & Feedback */}
+      <FeedbackSection donation={donation} />
     </div>
   );
 };

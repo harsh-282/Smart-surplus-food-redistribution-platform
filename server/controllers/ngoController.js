@@ -21,10 +21,20 @@ const getNGOProfile = async (req, res) => {
 // @access  NGO
 const updateNGOProfile = async (req, res) => {
   try {
-    const { organizationName, contactPerson, phone, address, description, registrationNumber } = req.body;
+    const { organizationName, contactPerson, phone, address, description, registrationNumber, servingCapacity, serviceArea, acceptedCategories } = req.body;
     const profile = await NGO.findOneAndUpdate(
       { userId: req.user._id },
-      { organizationName, contactPerson, phone, address, description, registrationNumber },
+      {
+        organizationName,
+        contactPerson,
+        phone,
+        address,
+        description,
+        registrationNumber,
+        servingCapacity: servingCapacity ? Number(servingCapacity) : 100,
+        serviceArea: serviceArea || '',
+        acceptedCategories: Array.isArray(acceptedCategories) ? acceptedCategories : ['All'],
+      },
       { new: true, runValidators: true, upsert: true }
     ).populate('userId', 'name email phone');
 

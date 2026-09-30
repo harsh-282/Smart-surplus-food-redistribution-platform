@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { NotificationProvider } from './context/NotificationContext';
 
 // Layouts
 import PublicLayout from './layouts/PublicLayout';
@@ -126,7 +127,9 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <AppRoutes />
+          <NotificationProvider>
+            <AppRoutes />
+          </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

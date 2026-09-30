@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Donation = require('../models/Donation');
 const NGO = require('../models/NGO');
 const Volunteer = require('../models/Volunteer');
+const Notification = require('../models/Notification');
 
 const connectDB = async () => {
   await mongoose.connect(process.env.MONGODB_URL, { dbName: 'smart_food_redistribution' });
@@ -19,6 +20,7 @@ const seedData = async () => {
   await Donation.deleteMany({});
   await NGO.deleteMany({});
   await Volunteer.deleteMany({});
+  await Notification.deleteMany({});
   console.log('🗑️  Cleared existing data');
 
   // Create Admin
@@ -226,7 +228,7 @@ const seedData = async () => {
   });
 
   // 7. Completed - Delivered earlier
-  await Donation.create({
+  const d7 = await Donation.create({
     donorId: donor2._id,
     foodName: 'Vegetables Mix',
     category: 'Raw Vegetables',
@@ -240,6 +242,55 @@ const seedData = async () => {
     acceptedBy: ngoUser2._id,
     volunteerId: volUser1._id,
   });
+
+  // Seed Notifications for Demo Users
+  await Notification.create([
+    {
+      recipient: donor1._id,
+      title: 'Food Expiring Soon ⚡',
+      message: 'Urgent: Your donation "Idli and Chutney" (80 pieces) will expire soon. Please coordinate pickup.',
+      type: 'EXPIRY_WARNING',
+      isRead: false,
+    },
+    {
+      recipient: donor1._id,
+      title: 'Donation Listed Successfully 🌿',
+      message: 'Your food donation "Rice and Sambar" (50 portions) is now live and visible to verified NGOs.',
+      type: 'DONATION_CREATED',
+      isRead: true,
+    },
+    {
+      recipient: donor2._id,
+      sender: ngoUser1._id,
+      title: 'Donation Accepted 🎉',
+      message: 'HelpHands NGO has accepted your donation "Wedding Meal Surplus". Volunteer pickup scheduled.',
+      type: 'DONATION_ACCEPTED',
+      isRead: false,
+    },
+    {
+      recipient: volUser1._id,
+      sender: ngoUser2._id,
+      title: 'New Pickup Assigned 🚴',
+      message: 'You have been assigned to pick up "Assorted Bakery Bread & Rolls" (40 packs) at 45, T. Nagar.',
+      type: 'VOLUNTEER_ASSIGNED',
+      isRead: false,
+    },
+    {
+      recipient: ngoUser1._id,
+      sender: donor1._id,
+      title: 'New Surplus Food Available 🌿',
+      message: 'New donation: "Rice and Sambar" (50 portions) is available in Anna Nagar, Chennai.',
+      type: 'DONATION_CREATED',
+      isRead: false,
+    },
+    {
+      recipient: admin._id,
+      title: 'System Activity Alert 📊',
+      message: 'Active surplus food distribution running across Chennai. 7 donations currently logged.',
+      type: 'GENERAL',
+      isRead: false,
+    },
+  ]);
 
   console.log('\n🎉 Demo data seeded successfully!\n');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

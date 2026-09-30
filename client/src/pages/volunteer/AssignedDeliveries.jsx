@@ -5,6 +5,8 @@ import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
+import { getNavigationUrl } from '../../utils/distanceHelper';
+
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
 
 const AssignedDeliveries = () => {
@@ -38,7 +40,7 @@ const AssignedDeliveries = () => {
       <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 className="page-title">Assigned Deliveries</h1>
-          <p className="page-subtitle">Track, pickup, and complete your assigned redistribution tasks.</p>
+          <p className="page-subtitle">Track, pickup, route navigation, and complete your assigned redistribution tasks.</p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button
@@ -76,35 +78,61 @@ const AssignedDeliveries = () => {
                 <th>Food</th>
                 <th>Category</th>
                 <th>Quantity</th>
-                <th>Donor</th>
-                <th>NGO</th>
-                <th>Expiry & Urgency</th>
+                <th>Pickup Location</th>
+                <th>NGO Destination</th>
                 <th>Workflow Status</th>
-                <th>Action</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {list.map(d => (
-                <tr key={d._id}>
-                  <td><strong>{d.foodName}</strong></td>
-                  <td>{d.category}</td>
-                  <td>{d.quantity}</td>
-                  <td>{d.donorId?.name}</td>
-                  <td>{d.acceptedBy?.name}</td>
-                  <td>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formatDate(d.expiryDate)}</span>
-                      <ExpiryBadge expiryDate={d.expiryDate} showTime={true} />
-                    </div>
-                  </td>
-                  <td><StatusBadge status={d.status} /></td>
-                  <td>
-                    <Link to={`/volunteer/deliveries/${d._id}`} className="btn btn-secondary btn-sm">
-                      {['Completed', 'Cancelled'].includes(d.status) ? 'Details' : 'Update'}
-                    </Link>
-                  </td>
-                </tr>
-              ))}
+              {list.map(d => {
+                const navUrl = getNavigationUrl(
+                  d.pickupCoordinates || d.pickupAddress || d.donorId?.address,
+                  d.acceptedBy?.locationCoordinates || d.acceptedBy?.address
+                );
+                return (
+                  <tr key={d._id}>
+                    <td><strong>{d.foodName}</strong></td>
+                    <td>{d.category}</td>
+                    <td>{d.quantity}</td>
+                    <td>
+                      <div>
+                        <strong>📍 {d.donorId?.name || 'Donor'}</strong>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          {d.pickupAddress || d.donorId?.address || 'Address N/A'}
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div>
+                        <strong>🏢 {d.acceptedBy?.name || 'NGO'}</strong>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                          {d.acceptedBy?.address || 'Address N/A'}
+                        </div>
+                      </div>
+                    </td>
+                    <td><StatusBadge status={d.status} /></td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        <Link to={`/volunteer/deliveries/${d._id}`} className="btn btn-secondary btn-sm">
+                          {['Completed', 'Cancelled'].includes(d.status) ? 'Details' : 'Update'}
+                        </Link>
+                        {navUrl && (
+                          <a
+                            href={navUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-primary btn-sm"
+                            title="Open Google Maps Navigation"
+                          >
+                            🧭 Nav
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

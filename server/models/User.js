@@ -37,6 +37,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    locationCoordinates: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+    },
     isActive: {
       type: Boolean,
       default: true,

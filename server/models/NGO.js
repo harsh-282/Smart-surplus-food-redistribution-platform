@@ -35,6 +35,28 @@ const ngoSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    // Enhanced Fields for Smart Matching
+    acceptedCategories: {
+      type: [String],
+      default: ['All'],
+    },
+    servingCapacity: {
+      type: Number,
+      default: 100, // Estimated max portions/kg the NGO can handle per batch
+    },
+    serviceArea: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    locationCoordinates: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+    },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

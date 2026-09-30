@@ -5,6 +5,10 @@ import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
 import { getExpiryInfo } from '../../utils/expiryHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import FeedbackSection from '../../components/common/FeedbackSection';
+import SmartVolunteerSelector from '../../components/common/SmartVolunteerSelector';
+import GoogleMapView from '../../components/common/GoogleMapView';
+import LiveTrackerControls from '../../components/common/LiveTrackerControls';
 
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
 
@@ -18,6 +22,7 @@ const NGODonationDetails = () => {
   const [assigning, setAssigning] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [trackingInfo, setTrackingInfo] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -179,33 +184,15 @@ const NGODonationDetails = () => {
 
           {donation.status === 'Accepted' && (
             <div>
-              <h4 style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.75rem' }}>Assign Delivery Volunteer</h4>
-              {volunteers.length === 0 ? (
-                <div className="alert alert-warning" style={{ margin: 0 }}>
-                  ⚠️ No available volunteers active at the moment.
-                </div>
-              ) : (
-                <form onSubmit={handleAssignVolunteer}>
-                  <div className="form-group">
-                    <label className="form-label">Select Volunteer</label>
-                    <select
-                      className="form-control"
-                      value={selectedVolunteer}
-                      onChange={e => setSelectedVolunteer(e.target.value)}
-                    >
-                      <option value="">-- Choose Volunteer --</option>
-                      {volunteers.map(v => (
-                        <option key={v._id} value={v.userId?._id}>
-                          🚴 {v.userId?.name} ({v.vehicleType || 'Motorcycle'} | completed: {v.completedDeliveries})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <button type="submit" className="btn btn-primary btn-block" disabled={assigning}>
-                    {assigning ? 'Assigning...' : 'Assign Volunteer'}
-                  </button>
-                </form>
-              )}
+              <h4 style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.75rem' }}>🚴 Assign Delivery Volunteer</h4>
+              <SmartVolunteerSelector
+                donationId={donation._id}
+                donation={donation}
+                onAssigned={(updatedDonation) => {
+                  setDonation(updatedDonation);
+                  setSuccessMsg('🚴 Volunteer assigned successfully!');
+                }}
+              />
             </div>
           )}
 
@@ -230,6 +217,31 @@ const NGODonationDetails = () => {
           )}
         </div>
       </div>
+
+      {/* Live GPS Tracking & Google Map View */}
+      {['Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'].includes(donation.status) && (
+        <>
+          <LiveTrackerControls
+            donationId={donation._id}
+            donationStatus={donation.status}
+            isVolunteer={false}
+            onTrackingChange={setTrackingInfo}
+          />
+          <GoogleMapView
+            pickupAddress={donation.pickupAddress || donation.donorId?.address}
+            pickupCoords={donation.pickupCoordinates || donation.donorId?.locationCoordinates}
+            destinationAddress={donation.acceptedBy?.address}
+            destinationCoords={donation.acceptedBy?.locationCoordinates}
+            volunteerCoords={trackingInfo?.location}
+            trackingActive={Boolean(trackingInfo?.trackingActive)}
+            isStale={Boolean(trackingInfo?.isStale)}
+            lastUpdatedAt={trackingInfo?.lastUpdatedAt}
+          />
+        </>
+      )}
+
+      {/* Ratings & Feedback */}
+      <FeedbackSection donation={donation} />
     </div>
   );
 };

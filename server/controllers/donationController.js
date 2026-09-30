@@ -1,6 +1,9 @@
 const Donation = require('../models/Donation');
+const User = require('../models/User');
+const NGO = require('../models/NGO');
 const cloudinary = require('../config/cloudinary');
 const { isExpired } = require('../utils/expiryHelper');
+const { createNotification, notifyMultipleUsers } = require('../utils/notificationHelper');
 
 // @desc    Create a donation
 // @route   POST /api/donations
@@ -54,47 +57,100 @@ const createDonation = async (req, res) => {
     const populated = await Donation.findById(donation._id)
       .populate('donorId', 'name email phone address');
 
+    // 1. Notify the donor of successful creation
+    await createNotification({
+      recipient: req.user._id,
+      title: 'Donation Listed Successfully 🌿',
+      message: `Your food donation "${foodName}" (${quantity}) is now live. NGOs in your area have been notified.`,
+      type: 'DONATION_CREATED',
+      donationId: donation._id,
+      metadata: { foodName, quantity, status: 'Available' },
+    });
+
+    // 2. Notify all active NGOs about new available surplus food
+    const ngos = await User.find({ role: 'ngo', isActive: true }).select('_id');
+    if (ngos.length > 0) {
+      await notifyMultipleUsers(
+        ngos.map((n) => n._id),
+        {
+          sender: req.user._id,
+          title: 'New Surplus Food Available 🌿',
+          message: `New donation: "${foodName}" (${quantity}) is available for pickup at ${pickupAddress}.`,
+          type: 'DONATION_CREATED',
+          donationId: donation._id,
+          metadata: { foodName, category, quantity, pickupAddress },
+        }
+      );
+    }
+
     res.status(201).json({ success: true, message: 'Donation posted successfully!', donation: populated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Get all available donations (for NGO view)
+// @desc    Get all available donations (for NGO view with advanced filters)
 // @route   GET /api/donations
 // @access  Private
 const getDonations = async (req, res) => {
   try {
-    const { status, category, search } = req.query;
+    const { status, category, search, location, quantity, expiryStatus, urgentOnly } = req.query;
     let filter = {};
+    const now = new Date();
+    const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-    if (status) filter.status = status;
-    if (category) filter.category = category;
+    if (status && status !== 'All') filter.status = status;
+    if (category && category !== 'All') filter.category = category;
+
     if (search) {
       filter.$or = [
         { foodName: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
         { pickupAddress: { $regex: search, $options: 'i' } },
+        { quantity: { $regex: search, $options: 'i' } },
       ];
     }
 
-    // Donors see only their own donations
+    if (location) {
+      filter.pickupAddress = { $regex: location, $options: 'i' };
+    }
+
+    if (quantity) {
+      filter.quantity = { $regex: quantity, $options: 'i' };
+    }
+
+    // Expiry Status Filter
+    if (expiryStatus === 'Fresh') {
+      filter.expiryDate = { $gt: next24h };
+    } else if (expiryStatus === 'Near Expiry' || expiryStatus === 'Urgent' || urgentOnly === 'true') {
+      filter.expiryDate = { $gt: now, $lte: next24h };
+    } else if (expiryStatus === 'Expired') {
+      filter.expiryDate = { $lte: now };
+    }
+
+    // Role specific rules
     if (req.user.role === 'donor') {
       filter.donorId = req.user._id;
     }
 
-    // NGOs see available + what they accepted
     if (req.user.role === 'ngo') {
-      if (!status) {
+      if (!status || status === 'All') {
         filter.status = 'Available';
       }
     }
 
+    // CRITICAL SECURITY & BUSINESS RULE:
     // Hide expired food from NGO available donation listings and any available queries
-    if (filter.status === 'Available' || (req.user.role === 'ngo' && !status)) {
-      filter.expiryDate = { $gt: new Date() };
+    if (filter.status === 'Available' || (req.user.role === 'ngo' && (!status || status === 'All'))) {
+      if (filter.expiryDate) {
+        if (filter.expiryDate.$gt) {
+          filter.expiryDate.$gt = new Date(Math.max(new Date(filter.expiryDate.$gt).getTime(), now.getTime()));
+        }
+      } else {
+        filter.expiryDate = { $gt: now };
+      }
     }
 
-    // Volunteers see assigned to them
     if (req.user.role === 'volunteer') {
       filter.volunteerId = req.user._id;
     }
@@ -103,7 +159,7 @@ const getDonations = async (req, res) => {
       .populate('donorId', 'name email phone address')
       .populate('acceptedBy', 'name email phone')
       .populate('volunteerId', 'name email phone')
-      .sort({ createdAt: -1 });
+      .sort({ expiryDate: 1, createdAt: -1 });
 
     res.status(200).json({ success: true, count: donations.length, donations });
   } catch (error) {
@@ -117,15 +173,26 @@ const getDonations = async (req, res) => {
 const getDonation = async (req, res) => {
   try {
     const donation = await Donation.findById(req.params.id)
-      .populate('donorId', 'name email phone address')
-      .populate('acceptedBy', 'name email phone')
+      .populate('donorId', 'name email phone address locationCoordinates')
+      .populate('acceptedBy', 'name email phone address locationCoordinates')
       .populate('volunteerId', 'name email phone');
 
     if (!donation) {
       return res.status(404).json({ success: false, message: 'Donation not found.' });
     }
 
-    res.status(200).json({ success: true, donation });
+    const donationObj = donation.toObject();
+    if (donation.acceptedBy) {
+      const ngoProfile = await NGO.findOne({ userId: donation.acceptedBy._id }).select('address locationCoordinates organizationName');
+      if (ngoProfile) {
+        if (!donationObj.acceptedBy.address) donationObj.acceptedBy.address = ngoProfile.address;
+        if (!donationObj.acceptedBy.locationCoordinates && ngoProfile.locationCoordinates) {
+          donationObj.acceptedBy.locationCoordinates = ngoProfile.locationCoordinates;
+        }
+      }
+    }
+
+    res.status(200).json({ success: true, donation: donationObj });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -162,6 +229,17 @@ const acceptDonation = async (req, res) => {
       .populate('donorId', 'name email phone address')
       .populate('acceptedBy', 'name email phone');
 
+    // Notify the donor that their donation was accepted
+    await createNotification({
+      recipient: donation.donorId,
+      sender: req.user._id,
+      title: 'Donation Accepted 🎉',
+      message: `${req.user.name || 'An NGO'} has accepted your donation "${donation.foodName}". Volunteer pickup will be assigned soon.`,
+      type: 'DONATION_ACCEPTED',
+      donationId: donation._id,
+      metadata: { foodName: donation.foodName, ngoName: req.user.name },
+    });
+
     res.status(200).json({ success: true, message: 'Donation accepted successfully!', donation: populated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -192,6 +270,28 @@ const assignVolunteer = async (req, res) => {
       .populate('donorId', 'name email phone address')
       .populate('acceptedBy', 'name email phone')
       .populate('volunteerId', 'name email phone');
+
+    // 1. Notify the assigned volunteer
+    await createNotification({
+      recipient: volunteerId,
+      sender: req.user._id,
+      title: 'New Pickup Assigned 🚴',
+      message: `You have been assigned to pick up "${donation.foodName}" (${donation.quantity}) at ${donation.pickupAddress}.`,
+      type: 'VOLUNTEER_ASSIGNED',
+      donationId: donation._id,
+      metadata: { foodName: donation.foodName, pickupAddress: donation.pickupAddress },
+    });
+
+    // 2. Notify the donor
+    await createNotification({
+      recipient: donation.donorId,
+      sender: req.user._id,
+      title: 'Volunteer Assigned for Pickup 🚴',
+      message: `A volunteer has been assigned to collect your donation "${donation.foodName}".`,
+      type: 'STATUS_CHANGED',
+      donationId: donation._id,
+      metadata: { foodName: donation.foodName, status: 'Pickup Assigned' },
+    });
 
     res.status(200).json({ success: true, message: 'Volunteer assigned successfully!', donation: populated });
   } catch (error) {
@@ -229,6 +329,57 @@ const updateStatus = async (req, res) => {
       .populate('acceptedBy', 'name email phone')
       .populate('volunteerId', 'name email phone');
 
+    // Notify relevant users based on new status
+    const statusNotifications = {
+      'Picked Up': {
+        donorTitle: 'Donation Picked Up 📦',
+        donorMsg: `Your donation "${donation.foodName}" has been collected by the volunteer from ${donation.pickupAddress}.`,
+        ngoTitle: 'Donation In Transit 🚚',
+        ngoMsg: `Donation "${donation.foodName}" has been picked up and is on its way to your location.`,
+      },
+      'Delivered': {
+        donorTitle: 'Donation Delivered 🥗',
+        donorMsg: `Your donation "${donation.foodName}" has been successfully delivered to the NGO.`,
+        ngoTitle: 'Donation Delivered 🥗',
+        ngoMsg: `Donation "${donation.foodName}" has arrived at your distribution center.`,
+      },
+      'Completed': {
+        donorTitle: 'Donation Completed ✅',
+        donorMsg: `Thank you! Your donation "${donation.foodName}" has been distributed. You helped reduce hunger!`,
+        ngoTitle: 'Donation Marked Completed ✅',
+        ngoMsg: `Donation "${donation.foodName}" distribution has been finalized.`,
+      },
+    };
+
+    const notifInfo = statusNotifications[status];
+    if (notifInfo) {
+      // Notify Donor
+      if (donation.donorId) {
+        await createNotification({
+          recipient: donation.donorId,
+          sender: req.user._id,
+          title: notifInfo.donorTitle,
+          message: notifInfo.donorMsg,
+          type: 'STATUS_CHANGED',
+          donationId: donation._id,
+          metadata: { foodName: donation.foodName, status },
+        });
+      }
+
+      // Notify NGO (if not the actor updating)
+      if (donation.acceptedBy && donation.acceptedBy.toString() !== req.user._id.toString()) {
+        await createNotification({
+          recipient: donation.acceptedBy,
+          sender: req.user._id,
+          title: notifInfo.ngoTitle,
+          message: notifInfo.ngoMsg,
+          type: 'STATUS_CHANGED',
+          donationId: donation._id,
+          metadata: { foodName: donation.foodName, status },
+        });
+      }
+    }
+
     res.status(200).json({ success: true, message: `Status updated to ${status}!`, donation: populated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -257,6 +408,45 @@ const cancelDonation = async (req, res) => {
 
     donation.status = 'Cancelled';
     await donation.save();
+
+    // Notify NGO if accepted
+    if (donation.acceptedBy && donation.acceptedBy.toString() !== req.user._id.toString()) {
+      await createNotification({
+        recipient: donation.acceptedBy,
+        sender: req.user._id,
+        title: 'Donation Cancelled ⚠️',
+        message: `Donation "${donation.foodName}" was cancelled.`,
+        type: 'STATUS_CHANGED',
+        donationId: donation._id,
+        metadata: { foodName: donation.foodName, status: 'Cancelled' },
+      });
+    }
+
+    // Notify Volunteer if assigned
+    if (donation.volunteerId && donation.volunteerId.toString() !== req.user._id.toString()) {
+      await createNotification({
+        recipient: donation.volunteerId,
+        sender: req.user._id,
+        title: 'Delivery Assignment Cancelled ⚠️',
+        message: `Pickup assignment for donation "${donation.foodName}" has been cancelled.`,
+        type: 'STATUS_CHANGED',
+        donationId: donation._id,
+        metadata: { foodName: donation.foodName, status: 'Cancelled' },
+      });
+    }
+
+    // Notify Donor if cancelled by admin
+    if (req.user.role === 'admin' && donation.donorId.toString() !== req.user._id.toString()) {
+      await createNotification({
+        recipient: donation.donorId,
+        sender: req.user._id,
+        title: 'Donation Cancelled by Admin ⚠️',
+        message: `Your donation "${donation.foodName}" was cancelled by the administrator.`,
+        type: 'STATUS_CHANGED',
+        donationId: donation._id,
+        metadata: { foodName: donation.foodName, status: 'Cancelled' },
+      });
+    }
 
     res.status(200).json({ success: true, message: 'Donation cancelled.', donation });
   } catch (error) {

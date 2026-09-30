@@ -27,6 +27,9 @@ const NGOProfile = () => {
           contactPerson: p?.contactPerson || '',
           description: p?.description || '',
           registrationNumber: p?.registrationNumber || '',
+          servingCapacity: p?.servingCapacity || 100,
+          serviceArea: p?.serviceArea || '',
+          acceptedCategories: p?.acceptedCategories || ['All'],
         });
       })
       .catch(err => {
@@ -59,6 +62,9 @@ const NGOProfile = () => {
         address: form.address,
         description: form.description,
         registrationNumber: form.registrationNumber,
+        servingCapacity: form.servingCapacity,
+        serviceArea: form.serviceArea,
+        acceptedCategories: form.acceptedCategories,
       });
 
       // 2. Update core user details
@@ -159,6 +165,29 @@ const NGOProfile = () => {
                   value={form.phone}
                   onChange={e => setForm({ ...form, phone: e.target.value })}
                   required
+                />
+              </div>
+            </div>
+
+            <div className="grid-2" style={{ gap: '1rem' }}>
+              <div className="form-group">
+                <label className="form-label">Batch Serving Capacity (portions/kg)</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="e.g. 100"
+                  value={form.servingCapacity}
+                  onChange={e => setForm({ ...form, servingCapacity: e.target.value })}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Primary Service Area / City</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. Central City, Puducherry"
+                  value={form.serviceArea}
+                  onChange={e => setForm({ ...form, serviceArea: e.target.value })}
                 />
               </div>
             </div>

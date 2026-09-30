@@ -1,59 +1,54 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import StatCard from '../../components/common/StatCard';
 import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import AnalyticsKpiCards from '../../components/admin/AnalyticsKpiCards';
+import AnalyticsCharts from '../../components/admin/AnalyticsCharts';
+import AdminFeedbackStats from '../../components/admin/AdminFeedbackStats';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState(null);
   const [recentDonations, setRecentDonations] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
-      api.get('/admin/stats'),
+      api.get('/admin/analytics'),
       api.get('/admin/donations')
     ])
-      .then(([statsRes, donRes]) => {
-        setStats(statsRes.data.stats);
-        setRecentDonations(donRes.data.donations.slice(0, 5));
+      .then(([analyticsRes, donRes]) => {
+        setAnalyticsData(analyticsRes.data);
+        setRecentDonations(donRes.data.donations ? donRes.data.donations.slice(0, 5) : []);
       })
-      .catch(err => console.error(err))
+      .catch(err => console.error('Admin Dashboard load error:', err))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <LoadingSpinner />;
 
   return (
-    <div>
+    <div className="admin-dashboard-wrapper">
       <div className="page-header">
-        <h1 className="page-title">Admin Dashboard</h1>
-        <p className="page-subtitle">Monitor and oversee the surplus food redistribution ecosystem.</p>
+        <h1 className="page-title">Admin Dashboard & Ecosystem Analytics</h1>
+        <p className="page-subtitle">Real-time monitoring, ecosystem metrics, and donation workflow intelligence.</p>
       </div>
 
-      {stats && (
-        <>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.875rem' }}>Ecosystem Members</h3>
-          <div className="grid-4" style={{ marginBottom: '2rem' }}>
-            <StatCard icon="👥" value={stats.totalUsers}       label="Ecosystem Users"    colorClass="blue" />
-            <StatCard icon="🍽️" value={stats.totalDonors}      label="Active Donors"      colorClass="orange" />
-            <StatCard icon="🏢" value={stats.totalNGOs}        label="NGO Partners"       colorClass="teal" />
-            <StatCard icon="🚴" value={stats.totalVolunteers}  label="Delivery Volunteers" colorClass="purple" />
-          </div>
-
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.875rem' }}>Donation Logistics</h3>
-          <div className="grid-4" style={{ marginBottom: '2rem' }}>
-            <StatCard icon="📋" value={stats.totalDonations}     label="Total Donations"     colorClass="blue" />
-            <StatCard icon="🟢" value={stats.availableDonations} label="Available Foods"     colorClass="green" />
-            <StatCard icon="🎉" value={stats.completedDonations} label="Completed Deliveries" colorClass="green" />
-            <StatCard icon="❌" value={stats.cancelledDonations} label="Cancelled/Inappropriate" colorClass="red" />
-          </div>
-        </>
+      {/* 1. Analytics KPI Cards (10 Total Metrics) */}
+      {analyticsData?.kpis && (
+        <AnalyticsKpiCards kpis={analyticsData.kpis} />
       )}
+
+      {/* 2. Analytics Visualizations & Charts */}
+      {analyticsData?.charts && (
+        <div style={{ marginBottom: '2.5rem' }}>
+          <AnalyticsCharts charts={analyticsData.charts} />
+        </div>
+      )}
+
 
       {/* Navigation Quicklinks */}
       <div className="grid-2" style={{ marginBottom: '2rem' }}>
@@ -123,6 +118,9 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* 3. Ratings & Feedback Audit Section */}
+      <AdminFeedbackStats />
     </div>
   );
 };

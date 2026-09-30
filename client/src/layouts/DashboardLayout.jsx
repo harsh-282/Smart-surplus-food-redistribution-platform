@@ -1,6 +1,8 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
+import OfflineBanner from '../components/common/OfflineBanner';
+import PushNotificationBanner from '../components/common/PushNotificationBanner';
 
 const SIDEBAR_CONFIG = {
   donor: [
@@ -46,6 +48,7 @@ const DashboardLayout = ({ role }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <OfflineBanner />
       <Navbar />
       <div className="dashboard-layout">
         {/* Sidebar */}
@@ -92,6 +95,7 @@ const DashboardLayout = ({ role }) => {
 
         {/* Main Content */}
         <main className="dashboard-main">
+          <PushNotificationBanner />
           <Outlet />
         </main>
       </div>
@@ -100,3 +104,4 @@ const DashboardLayout = ({ role }) => {
 };
 
 export default DashboardLayout;
+
