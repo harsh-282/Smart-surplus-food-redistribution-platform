@@ -3,9 +3,11 @@ const User = require('../models/User');
 const NGO = require('../models/NGO');
 const Volunteer = require('../models/Volunteer');
 
+const JWT_SECRET = process.env.JWT_SECRET || 'smartfood_jwt_secret_key_2024_secure';
+
 // Generate JWT Token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id }, JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '7d',
   });
 };
