@@ -95,6 +95,20 @@ const DashboardLayout = ({ role }) => {
 
         {/* Main Content */}
         <main className="dashboard-main">
+          {/* Mobile Horizontal Tab Navigation */}
+          <div className="mobile-subnav-bar">
+            {links.map(({ to, icon, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) => `mobile-subnav-item${isActive ? ' active' : ''}`}
+              >
+                <span className="mobile-subnav-icon">{icon}</span>
+                <span className="mobile-subnav-text">{label}</span>
+              </NavLink>
+            ))}
+          </div>
+
           <PushNotificationBanner />
           <Outlet />
         </main>

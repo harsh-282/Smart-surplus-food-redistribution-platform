@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { calculateHaversineDistance, formatDistance, getNavigationUrl, geocodeAddress } from '../../utils/distanceHelper';
+import { calculateHaversineDistance, formatDistance, getNavigationUrl, geocodeAddress, openGoogleMapsDirections } from '../../utils/distanceHelper';
 
 const RouteDistanceCard = ({
   pickupAddress,
@@ -239,13 +239,20 @@ const RouteDistanceCard = ({
             href={navUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => {
+              e.preventDefault();
+              openGoogleMapsDirections(
+                resolvedPickupCoords || pickupAddress,
+                resolvedDestCoords || destinationAddress
+              );
+            }}
             className="btn btn-primary"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', minHeight: '44px' }}
           >
             🧭 Open Navigation
           </a>
         ) : (
-          <button className="btn btn-primary" disabled style={{ opacity: 0.6 }}>
+          <button className="btn btn-primary" disabled style={{ opacity: 0.6, minHeight: '44px' }}>
             🧭 Open Navigation (Address missing)
           </button>
         )}

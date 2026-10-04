@@ -8,36 +8,57 @@ const geocodeCache = new Map();
 /**
  * Haversine formula to calculate great-circle distance between two (lat, lng) points in kilometers.
  */
+/**
+ * Haversine formula to calculate great-circle distance between two (lat, lng) points in kilometers.
+ * Handles string vs number coordinate values, null/undefined, out-of-bounds inputs.
+ */
 export const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
-  if (
-    lat1 === undefined || lat1 === null || isNaN(lat1) ||
-    lon1 === undefined || lon1 === null || isNaN(lon1) ||
-    lat2 === undefined || lat2 === null || isNaN(lat2) ||
-    lon2 === undefined || lon2 === null || isNaN(lon2)
-  ) {
+  const parseCoord = (val) => {
+    if (val === null || val === undefined || val === '') return null;
+    const num = Number(val);
+    if (isNaN(num) || !isFinite(num)) return null;
+    return num;
+  };
+
+  const pLat1 = parseCoord(lat1);
+  const pLon1 = parseCoord(lon1);
+  const pLat2 = parseCoord(lat2);
+  const pLon2 = parseCoord(lon2);
+
+  if (pLat1 === null || pLon1 === null || pLat2 === null || pLon2 === null) {
+    return null;
+  }
+
+  // Validate geographical coordinate bounds
+  if (Math.abs(pLat1) > 90 || Math.abs(pLat2) > 90 || Math.abs(pLon1) > 180 || Math.abs(pLon2) > 180) {
     return null;
   }
 
   const R = 6371; // Earth radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const dLat = ((pLat2 - pLat1) * Math.PI) / 180;
+  const dLon = ((pLon2 - pLon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
+    Math.cos((pLat1 * Math.PI) / 180) *
+      Math.cos((pLat2 * Math.PI) / 180) *
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const distance = R * c;
 
-  return Math.round(distance * 100) / 100;
+  if (isNaN(distance) || !isFinite(distance) || distance < 0) {
+    return null;
+  }
+
+  return Math.round(distance * 10) / 10;
 };
 
 /**
  * Format distance value into human-readable string.
+ * Never outputs NaN, null, undefined, or Infinity.
  */
 export const formatDistance = (distKm) => {
-  if (distKm === null || distKm === undefined || isNaN(distKm)) {
+  if (distKm === null || distKm === undefined || isNaN(distKm) || !isFinite(distKm) || distKm < 0) {
     return 'Distance unavailable';
   }
   if (distKm < 1) {
@@ -47,27 +68,64 @@ export const formatDistance = (distKm) => {
 };
 
 /**
- * Build Google Maps Navigation URL between origin and destination.
+ * Build Google Maps Driving Directions URL between origin and destination.
  */
 export const getNavigationUrl = (origin, destination) => {
-  let originStr = '';
-  let destStr = '';
+  const formatLocStr = (loc) => {
+    if (!loc) return null;
+    if (typeof loc === 'object' && loc.lat != null && loc.lng != null) {
+      const lat = Number(loc.lat);
+      const lng = Number(loc.lng);
+      if (!isNaN(lat) && !isNaN(lng) && isFinite(lat) && isFinite(lng)) {
+        return `${lat},${lng}`;
+      }
+    }
+    if (typeof loc === 'string' && loc.trim()) {
+      return encodeURIComponent(loc.trim());
+    }
+    return null;
+  };
 
-  if (origin && typeof origin === 'object' && origin.lat != null && origin.lng != null) {
-    originStr = `${origin.lat},${origin.lng}`;
-  } else if (typeof origin === 'string' && origin.trim()) {
-    originStr = encodeURIComponent(origin.trim());
+  const originStr = formatLocStr(origin);
+  const destStr = formatLocStr(destination);
+
+  if (!destStr && !originStr) return null;
+
+  if (!originStr) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${destStr}&travelmode=driving`;
   }
 
-  if (destination && typeof destination === 'object' && destination.lat != null && destination.lng != null) {
-    destStr = `${destination.lat},${destination.lng}`;
-  } else if (typeof destination === 'string' && destination.trim()) {
-    destStr = encodeURIComponent(destination.trim());
+  if (!destStr) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${originStr}&travelmode=driving`;
   }
-
-  if (!originStr || !destStr) return null;
 
   return `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${destStr}&travelmode=driving`;
+};
+
+/**
+ * Launch Google Maps Driving Directions in app/browser with optional live device GPS as origin
+ */
+export const openGoogleMapsDirections = (pickupLoc, destLoc) => {
+  const launch = (originCoords) => {
+    const url = getNavigationUrl(originCoords || pickupLoc, destLoc || pickupLoc);
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        launch({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      () => {
+        launch(null);
+      },
+      { timeout: 5000, maximumAge: 30000 }
+    );
+  } else {
+    launch(null);
+  }
 };
 
 /**

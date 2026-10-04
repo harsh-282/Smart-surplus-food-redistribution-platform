@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import DonationCard from '../../components/common/DonationCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { calculateHaversineDistance, geocodeAddress } from '../../utils/distanceHelper';
+import { calculateHaversineDistance, formatDistance, geocodeAddress } from '../../utils/distanceHelper';
 
 const CATEGORIES = [
   'All',
@@ -414,11 +414,9 @@ const AvailableDonations = () => {
 
                   {/* Distance & Preference Pills Overlay */}
                   <div style={{ marginTop: '-0.5rem', marginBottom: '0.75rem', padding: '0 0.5rem', display: 'flex', gap: '0.4rem', flexWrap: 'wrap', fontSize: '0.75rem' }}>
-                    {distanceKm != null && (
-                      <span className="badge badge-primary" style={{ fontWeight: 600 }}>
-                        📍 ~{distanceKm.toFixed(1)} km away
-                      </span>
-                    )}
+                    <span className="badge badge-primary" style={{ fontWeight: 600 }}>
+                      📍 {formatDistance(distanceKm)}
+                    </span>
                     {isPrefMatch && (
                       <span className="badge badge-success" style={{ fontWeight: 600 }}>
                         ⭐ Category Match

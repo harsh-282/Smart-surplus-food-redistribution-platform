@@ -5,7 +5,7 @@ import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-import { getNavigationUrl } from '../../utils/distanceHelper';
+import { getNavigationUrl, openGoogleMapsDirections } from '../../utils/distanceHelper';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
 
@@ -122,8 +122,15 @@ const AssignedDeliveries = () => {
                             href={navUrl}
                             target="_blank"
                             rel="noopener noreferrer"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openGoogleMapsDirections(
+                                d.pickupCoordinates || d.pickupAddress || d.donorId?.address,
+                                d.acceptedBy?.locationCoordinates || d.acceptedBy?.address
+                              );
+                            }}
                             className="btn btn-primary btn-sm"
-                            title="Open Google Maps Navigation"
+                            title="Open Turn-by-Turn Google Maps Navigation"
                           >
                             🧭 Nav
                           </a>
