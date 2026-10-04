@@ -146,6 +146,9 @@ const updateMe = async (req, res) => {
     if (name) user.name = name;
     if (phone) user.phone = phone;
     if (address) user.address = address;
+    if (req.body.locationCoordinates) {
+      user.locationCoordinates = req.body.locationCoordinates;
+    }
 
     // Resubmit verification if requested by NGO/Volunteer in Rejected state
     if (resubmitVerification && ['ngo', 'volunteer'].includes(user.role)) {

@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
@@ -8,7 +9,8 @@ const Volunteer = require('../models/Volunteer');
 const Notification = require('../models/Notification');
 
 const connectDB = async () => {
-  await mongoose.connect(process.env.MONGODB_URL, { dbName: 'smart_food_redistribution' });
+  const mongoUri = process.env.MONGODB_URL || process.env.MONGODB_URI || 'mongodb://localhost:27017/smart_food_redistribution';
+  await mongoose.connect(mongoUri, { dbName: 'smart_food_redistribution' });
   console.log('✅ Connected to MongoDB');
 };
 
@@ -41,6 +43,7 @@ const seedData = async () => {
     phone: '9876543210',
     role: 'donor',
     address: '12, Anna Nagar, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 13.0878, lng: 80.2170 },
   });
 
   const donor2 = await User.create({
@@ -50,6 +53,7 @@ const seedData = async () => {
     phone: '9876543211',
     role: 'donor',
     address: '45, T. Nagar, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 13.0418, lng: 80.2341 },
   });
 
   // Create NGO Users
@@ -60,6 +64,8 @@ const seedData = async () => {
     phone: '9123456789',
     role: 'ngo',
     address: '23, Velachery, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 12.9759, lng: 80.2212 },
+    verificationStatus: 'Verified',
   });
 
   const ngoUser2 = await User.create({
@@ -69,6 +75,8 @@ const seedData = async () => {
     phone: '9123456788',
     role: 'ngo',
     address: '78, Tambaram, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 12.9249, lng: 80.1000 },
+    verificationStatus: 'Verified',
   });
 
   // Create NGO Profiles
@@ -78,6 +86,7 @@ const seedData = async () => {
     contactPerson: 'Yasotha',
     phone: '9123456789',
     address: '23, Velachery, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 12.9759, lng: 80.2212 },
     description: 'We work to eliminate hunger by redistributing surplus food to street children and homeless communities.',
     registrationNumber: 'NGO-TN-2019-4521',
   });
@@ -88,6 +97,7 @@ const seedData = async () => {
     contactPerson: 'Arathi',
     phone: '9123456788',
     address: '78, Tambaram, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 12.9249, lng: 80.1000 },
     description: 'A grassroots organization dedicated to fighting food insecurity across Tamil Nadu.',
     registrationNumber: 'NGO-TN-2020-7832',
   });
@@ -100,6 +110,8 @@ const seedData = async () => {
     phone: '9988776655',
     role: 'volunteer',
     address: '15, Adyar, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 13.0012, lng: 80.2565 },
+    verificationStatus: 'Verified',
   });
 
   const volUser2 = await User.create({
@@ -109,6 +121,8 @@ const seedData = async () => {
     phone: '9988776644',
     role: 'volunteer',
     address: '34, Mylapore, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 13.0339, lng: 80.2676 },
+    verificationStatus: 'Verified',
   });
 
   // Create Volunteer Profiles
@@ -116,6 +130,7 @@ const seedData = async () => {
     userId: volUser1._id,
     phone: '9988776655',
     address: '15, Adyar, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 13.0012, lng: 80.2565 },
     vehicleType: 'Motorcycle',
     availability: 'Available',
     completedDeliveries: 12,
@@ -125,6 +140,7 @@ const seedData = async () => {
     userId: volUser2._id,
     phone: '9988776644',
     address: '34, Mylapore, Chennai, Tamil Nadu',
+    locationCoordinates: { lat: 13.0339, lng: 80.2676 },
     vehicleType: 'Car',
     availability: 'Available',
     completedDeliveries: 7,
@@ -150,6 +166,7 @@ const seedData = async () => {
     preparationDate: now,
     expiryDate: twoDaysLater,
     pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0878, lng: 80.2170 },
     description: 'Freshly prepared rice, sambar and vegetables. Stored safely.',
     status: 'Available',
   });
@@ -164,6 +181,7 @@ const seedData = async () => {
     preparationDate: new Date(now.getTime() - 2 * 60 * 60 * 1000),
     expiryDate: in5Hours,
     pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0878, lng: 80.2170 },
     description: 'Fresh breakfast idlis with coconut chutney. Best consumed within 5 hours.',
     status: 'Available',
   });
@@ -178,6 +196,7 @@ const seedData = async () => {
     preparationDate: new Date(now.getTime() - 3 * 60 * 60 * 1000),
     expiryDate: in12Hours,
     pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0418, lng: 80.2341 },
     description: 'Wedding buffet surplus biryani with cooling raita.',
     status: 'Available',
   });
@@ -192,6 +211,7 @@ const seedData = async () => {
     preparationDate: yesterday,
     expiryDate: threeHoursAgo,
     pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0878, lng: 80.2170 },
     description: 'Surplus morning fruit salads and slices.',
     status: 'Available',
   });
@@ -206,6 +226,7 @@ const seedData = async () => {
     preparationDate: yesterday,
     expiryDate: in5Hours,
     pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0418, lng: 80.2341 },
     description: 'Wedding ceremony surplus. Must be picked up promptly.',
     status: 'Accepted',
     acceptedBy: ngoUser1._id,
@@ -221,6 +242,7 @@ const seedData = async () => {
     preparationDate: yesterday,
     expiryDate: threeDaysLater,
     pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0418, lng: 80.2341 },
     description: 'Packaged whole wheat bread and bakery buns.',
     status: 'Pickup Assigned',
     acceptedBy: ngoUser2._id,
@@ -237,6 +259,7 @@ const seedData = async () => {
     preparationDate: twoDaysAgo,
     expiryDate: yesterday,
     pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0418, lng: 80.2341 },
     description: 'Fresh mixed vegetables - carrots, beans, and potatoes.',
     status: 'Completed',
     acceptedBy: ngoUser2._id,

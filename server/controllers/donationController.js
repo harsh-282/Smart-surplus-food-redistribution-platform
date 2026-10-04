@@ -63,6 +63,16 @@ const createDonation = async (req, res) => {
 
     const qrDonationId = await generateUniqueQrDonationId();
 
+    let pickupCoords = null;
+    if (req.body.pickupCoordinates) {
+      try {
+        pickupCoords = typeof req.body.pickupCoordinates === 'string' ? JSON.parse(req.body.pickupCoordinates) : req.body.pickupCoordinates;
+      } catch (e) {}
+    }
+    if ((!pickupCoords || pickupCoords.lat == null) && req.user.locationCoordinates?.lat != null) {
+      pickupCoords = req.user.locationCoordinates;
+    }
+
     const donation = new Donation({
       donorId: req.user._id,
       foodName,
@@ -72,6 +82,7 @@ const createDonation = async (req, res) => {
       preparationDate: prepDate,
       expiryDate: expDate,
       pickupAddress,
+      pickupCoordinates: pickupCoords,
       description,
       status: 'Available',
       qrDonationId,
