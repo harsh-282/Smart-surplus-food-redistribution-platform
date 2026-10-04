@@ -4,6 +4,7 @@ const {
   createDonation,
   getDonations,
   getDonation,
+  getDonationByQr,
   acceptDonation,
   assignVolunteer,
   updateStatus,
@@ -15,6 +16,7 @@ const { authorize } = require('../middleware/roleMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
 router.get('/my', protect, authorize('donor'), getMyDonations);
+router.get('/qr/:qrDonationId', protect, getDonationByQr);
 router.get('/', protect, getDonations);
 router.post('/', protect, authorize('donor'), upload.single('image'), createDonation);
 router.get('/:id', protect, getDonation);

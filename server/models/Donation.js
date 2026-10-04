@@ -72,6 +72,37 @@ const donationSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    statusHistory: [
+      {
+        status: { type: String, required: true },
+        timestamp: { type: Date, default: Date.now },
+        message: { type: String, default: '' },
+        updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        role: { type: String, default: '' },
+      },
+    ],
+    qrDonationId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
+    qrCreatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    // Pickup OTP Handover Fields
+    pickupOtpHash: { type: String, default: null },
+    pickupOtpExpiresAt: { type: Date, default: null },
+    pickupOtpAttempts: { type: Number, default: 0 },
+    pickupOtpVerifiedAt: { type: Date, default: null },
+    pickupOtpUsed: { type: Boolean, default: false },
+    // Delivery OTP Handover Fields
+    deliveryOtpHash: { type: String, default: null },
+    deliveryOtpExpiresAt: { type: Date, default: null },
+    deliveryOtpAttempts: { type: Number, default: 0 },
+    deliveryOtpVerifiedAt: { type: Date, default: null },
+    deliveryOtpUsed: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

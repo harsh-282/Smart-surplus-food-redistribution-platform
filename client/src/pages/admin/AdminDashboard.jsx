@@ -51,20 +51,29 @@ const AdminDashboard = () => {
 
 
       {/* Navigation Quicklinks */}
-      <div className="grid-2" style={{ marginBottom: '2rem' }}>
-        <div className="card" style={{ display: 'flex', alignItems: 'center', justify: 'space-between', gap: '1rem' }}>
+      <div className="grid-3" style={{ marginBottom: '2rem' }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', justify: 'space-between', gap: '1rem' }}>
           <div>
-            <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>User Management</h4>
+            <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>🛡️ NGO & Volunteer Verification</h4>
+            <p className="text-muted text-sm">Approve, reject, or suspend NGO and volunteer accounts for ecosystem trust.</p>
+          </div>
+          <Link to="/admin/verification" className="btn btn-primary btn-sm" style={{ alignSelf: 'flex-start' }}>
+            Verification Portal
+          </Link>
+        </div>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', justify: 'space-between', gap: '1rem' }}>
+          <div>
+            <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>👥 User Management</h4>
             <p className="text-muted text-sm">Review, verify, and deactivate/activate donor, NGO, and volunteer profiles.</p>
           </div>
-          <Link to="/admin/users" className="btn btn-secondary btn-sm">Manage Users</Link>
+          <Link to="/admin/users" className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }}>Manage Users</Link>
         </div>
-        <div className="card" style={{ display: 'flex', alignItems: 'center', justify: 'space-between', gap: '1rem' }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', justify: 'space-between', gap: '1rem' }}>
           <div>
-            <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Donation Management</h4>
+            <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>🍽️ Donation Management</h4>
             <p className="text-muted text-sm">Review and moderate all food listings. Cancel inappropriate content.</p>
           </div>
-          <Link to="/admin/donations" className="btn btn-secondary btn-sm">Manage Food</Link>
+          <Link to="/admin/donations" className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }}>Manage Food</Link>
         </div>
       </div>
 

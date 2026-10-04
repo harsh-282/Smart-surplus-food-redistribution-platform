@@ -23,9 +23,10 @@ const SIDEBAR_CONFIG = {
     { to: '/volunteer/profile',    icon: '👤', label: 'Profile' },
   ],
   admin: [
-    { to: '/admin/dashboard',  icon: '📊', label: 'Dashboard' },
-    { to: '/admin/users',      icon: '👥', label: 'Users' },
-    { to: '/admin/donations',  icon: '🍽️',  label: 'Donations' },
+    { to: '/admin/dashboard',    icon: '📊', label: 'Dashboard' },
+    { to: '/admin/verification', icon: '🛡️', label: 'Verification' },
+    { to: '/admin/users',        icon: '👥', label: 'Users' },
+    { to: '/admin/donations',    icon: '🍽️',  label: 'Donations' },
   ],
 };
 

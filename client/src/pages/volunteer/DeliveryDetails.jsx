@@ -6,6 +6,11 @@ import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import FeedbackSection from '../../components/common/FeedbackSection';
 import RouteDistanceCard from '../../components/common/RouteDistanceCard';
+import DonationTimeline from '../../components/common/DonationTimeline';
+import ProofOfDeliveryForm from '../../components/common/ProofOfDeliveryForm';
+import ProofOfDeliveryCard from '../../components/common/ProofOfDeliveryCard';
+import QRDonationBadge from '../../components/common/QRDonationBadge';
+import OTPVerificationCard from '../../components/common/OTPVerificationCard';
 import GoogleMapView from '../../components/common/GoogleMapView';
 import LiveTrackerControls from '../../components/common/LiveTrackerControls';
 
@@ -15,6 +20,7 @@ const DeliveryDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [donation, setDonation] = useState(null);
+  const [pod, setPod] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -23,8 +29,16 @@ const DeliveryDetails = () => {
   const [trackingInfo, setTrackingInfo] = useState(null);
 
   useEffect(() => {
-    api.get(`/donations/${id}`)
-      .then(res => setDonation(res.data.donation))
+    Promise.all([
+      api.get(`/donations/${id}`),
+      api.get(`/pod/${id}`).catch(() => ({ data: null })),
+    ])
+      .then(([donRes, podRes]) => {
+        setDonation(donRes.data.donation);
+        if (podRes?.data?.proofOfDelivery) {
+          setPod(podRes.data.proofOfDelivery);
+        }
+      })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
   }, [id]);
@@ -45,6 +59,13 @@ const DeliveryDetails = () => {
     }
   };
 
+  const handlePodCreated = (newPod) => {
+    setPod(newPod);
+    setSuccessMsg('🎉 Digital Proof of Delivery created successfully!');
+    // Refresh donation status
+    api.get(`/donations/${id}`).then(res => setDonation(res.data.donation)).catch(console.error);
+  };
+
   if (loading) return <LoadingSpinner />;
   if (!donation) {
     return (
@@ -62,7 +83,7 @@ const DeliveryDetails = () => {
 
       <div className="page-header">
         <h1 className="page-title">Delivery details</h1>
-        <p className="page-subtitle">Track pickup instructions, contact details, and update status.</p>
+        <p className="page-subtitle">Track pickup instructions, contact details, update status, and submit proof of delivery.</p>
       </div>
 
       {successMsg && <div className="alert alert-success">{successMsg}</div>}
@@ -79,7 +100,8 @@ const DeliveryDetails = () => {
           <div className="detail-body">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Food Donation</h2>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <QRDonationBadge donation={donation} />
                 <StatusBadge status={donation.status} />
                 <ExpiryBadge expiryDate={donation.expiryDate} />
               </div>
@@ -124,59 +146,63 @@ const DeliveryDetails = () => {
 
         {/* Update Status Actions Card */}
         <div className="card">
-          <h3 style={{ fontWeight: 700, marginBottom: '1.25rem' }}>Status Actions</h3>
+          <h3 style={{ fontWeight: 700, marginBottom: '1.25rem' }}>Handover & Status Actions</h3>
 
-          {donation.status === 'Pickup Assigned' && (
-            <div>
-              <p className="text-muted mb-2">You have been assigned to pick up this food. Once you reach the donor location and receive the food, click below.</p>
-              <button
-                onClick={() => handleUpdateStatus('Picked Up')}
-                className="btn btn-primary btn-block btn-lg"
-                disabled={updating}
-              >
-                {updating ? 'Updating...' : '📦 Mark as Picked Up'}
-              </button>
+          {/* Pickup Handover OTP Verification Card */}
+          {['Pickup Assigned', 'Accepted'].includes(donation.status) && (
+            <div style={{ marginBottom: '1.25rem' }}>
+              <OTPVerificationCard
+                donation={donation}
+                type="pickup"
+                onVerified={(updatedDonation) => setDonation(updatedDonation)}
+              />
             </div>
           )}
 
+          {/* Delivery Handover OTP Verification Card */}
           {donation.status === 'Picked Up' && (
-            <div>
-              <p className="text-muted mb-2">You have picked up the food. Once you reach the NGO location and safely deliver the food, click below.</p>
-              <button
-                onClick={() => handleUpdateStatus('Delivered')}
-                className="btn btn-orange btn-block btn-lg"
-                disabled={updating}
-              >
-                {updating ? 'Updating...' : '🚚 Mark as Delivered'}
-              </button>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <OTPVerificationCard
+                donation={donation}
+                type="delivery"
+                onVerified={(updatedDonation) => setDonation(updatedDonation)}
+              />
             </div>
           )}
 
-          {donation.status === 'Delivered' && (
-            <div>
-              <p className="text-muted mb-2">Food has been successfully delivered. Please mark the redistribution loop completed to finish the task.</p>
-              <button
-                onClick={() => handleUpdateStatus('Completed')}
-                className="btn btn-primary btn-block btn-lg"
-                disabled={updating}
-              >
-                {updating ? 'Updating...' : '🎉 Mark as Completed'}
-              </button>
+          {pod ? (
+            <div className="alert alert-success" style={{ margin: 0 }}>
+              ✓ Proof of Delivery submitted for this donation ({pod.podId}). Status: <strong>{pod.status}</strong>.
             </div>
-          )}
-
-          {donation.status === 'Completed' && (
+          ) : donation.status === 'Completed' ? (
             <div className="alert alert-success" style={{ margin: 0 }}>
               🎉 This redistribution delivery has been completed successfully! Good job!
             </div>
-          )}
-
-          {donation.status === 'Cancelled' && (
+          ) : donation.status === 'Cancelled' ? (
             <div className="alert alert-error" style={{ margin: 0 }}>
               ❌ This donation task was cancelled.
             </div>
-          )}
+          ) : null}
         </div>
+      </div>
+
+      {/* Digital Proof of Delivery Form (if in Picked Up or Delivered state and POD not submitted) */}
+      {['Picked Up', 'Delivered'].includes(donation.status) && !pod && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <ProofOfDeliveryForm donation={donation} onSuccess={handlePodCreated} />
+        </div>
+      )}
+
+      {/* Digital Proof of Delivery Display Card (if POD exists) */}
+      {pod && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <ProofOfDeliveryCard donation={donation} initialPod={pod} currentRole="Volunteer" />
+        </div>
+      )}
+
+      {/* Donation Journey Tracker */}
+      <div style={{ marginTop: '1.5rem' }}>
+        <DonationTimeline donation={donation} currentRole="Volunteer" />
       </div>
 
       {/* Live GPS Tracking Controls for Volunteer */}

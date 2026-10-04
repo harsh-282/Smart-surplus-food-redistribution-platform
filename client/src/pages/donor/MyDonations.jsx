@@ -4,6 +4,7 @@ import api from '../../services/api';
 import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import QRDonationBadge from '../../components/common/QRDonationBadge';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A';
 
@@ -92,8 +93,15 @@ const MyDonations = () => {
               {filtered.map(d => (
                 <tr key={d._id}>
                   <td>
-                    {d.image?.url && <img src={d.image.url} alt={d.foodName} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', marginRight: 8, verticalAlign: 'middle' }} />}
-                    <strong>{d.foodName}</strong>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {d.image?.url && <img src={d.image.url} alt={d.foodName} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />}
+                      <div>
+                        <strong>{d.foodName}</strong>
+                        <div style={{ marginTop: '0.15rem' }}>
+                          <QRDonationBadge donation={d} />
+                        </div>
+                      </div>
+                    </div>
                   </td>
                   <td>{d.category}</td>
                   <td>{d.quantity}</td>

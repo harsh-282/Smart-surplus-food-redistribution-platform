@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import VerificationBadge from '../../components/common/VerificationBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const NGOProfile = () => {
@@ -72,10 +73,15 @@ const NGOProfile = () => {
         name: form.name,
         phone: form.phone,
         address: form.address,
+        resubmitVerification: user?.verificationStatus === 'Rejected',
       });
 
       updateUser(userRes.data.user);
-      setSuccess('✅ Profile and Organization details updated successfully!');
+      setSuccess(
+        user?.verificationStatus === 'Rejected'
+          ? '✅ Profile updated and verification request resubmitted to admin for review!'
+          : '✅ Profile and Organization details updated successfully!'
+      );
     } catch (err) {
       setError(err.response?.data?.message || 'Update failed.');
     } finally {
@@ -105,8 +111,11 @@ const NGOProfile = () => {
             {getInitials(form.organizationName)}
           </div>
           <h2 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: '0.35rem' }}>{form.organizationName || 'NGO Name'}</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>Registration: {form.registrationNumber || 'Not set'}</p>
-          <span className="badge badge-ngo">🏢 NGO Partner</span>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>Registration: {form.registrationNumber || 'Not set'}</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.25rem' }}>
+            <span className="badge badge-ngo">🏢 NGO Partner</span>
+            <VerificationBadge status={user?.verificationStatus} role="ngo" size="xs" />
+          </div>
           <div className="divider" />
           <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.15rem' }}>CONTACT PERSON</div><div style={{ fontSize: '0.9rem' }}>{form.contactPerson || 'Not set'}</div></div>

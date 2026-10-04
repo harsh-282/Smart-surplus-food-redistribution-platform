@@ -3,6 +3,7 @@ import api from '../../services/api';
 import DonationCard from '../../components/common/DonationCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { calculateHaversineDistance, formatDistance, geocodeAddress } from '../../utils/distanceHelper';
+import { calculateDonationPriority } from '../../utils/donationPriorityHelper';
 
 const CATEGORIES = [
   'All',
@@ -30,6 +31,21 @@ const RADIUS_OPTIONS = [
   { label: 'Within 50 km', value: '50' },
 ];
 
+const PRIORITY_FILTER_OPTIONS = [
+  { label: 'All Priorities', value: 'All' },
+  { label: '🔴 Critical Priority (90-100)', value: 'CRITICAL' },
+  { label: '🟠 High Priority (70-89)', value: 'HIGH' },
+  { label: '🟡 Medium Priority (40-69)', value: 'MEDIUM' },
+  { label: '🟢 Normal Priority (0-39)', value: 'NORMAL' },
+];
+
+const SORT_OPTIONS = [
+  { label: '🎯 Highest Priority (Default)', value: 'highestPriority' },
+  { label: '📍 Nearest Distance', value: 'nearestDistance' },
+  { label: '⏳ Earliest Expiry', value: 'earliestExpiry' },
+  { label: '📅 Latest Added', value: 'latestAdded' },
+];
+
 const AvailableDonations = () => {
   const [donations, setDonations] = useState([]);
   const [ngoProfile, setNgoProfile] = useState(null);
@@ -43,6 +59,8 @@ const AvailableDonations = () => {
   const [quantity, setQuantity] = useState('');
   const [expiryStatus, setExpiryStatus] = useState('All');
   const [maxRadiusKm, setMaxRadiusKm] = useState('All');
+  const [priorityFilter, setPriorityFilter] = useState('All');
+  const [sortBy, setSortBy] = useState('highestPriority');
   const [urgentOnly, setUrgentOnly] = useState(false);
   const [prefOnly, setPrefOnly] = useState(false);
 
@@ -125,13 +143,46 @@ const AvailableDonations = () => {
         }
       }
 
-      setDonations(validList);
+      // Compute Smart Priority Scores for all items
+      let processedList = validList.map((d) => {
+        const priorityObj = calculateDonationPriority(d, ngoCoords, ngoProfile);
+        return {
+          ...d,
+          priority: priorityObj,
+        };
+      });
+
+      // Priority Filter
+      if (priorityFilter !== 'All') {
+        processedList = processedList.filter((d) => d.priority.level === priorityFilter);
+      }
+
+      // Priority Sorting (Highest Priority Default)
+      processedList.sort((a, b) => {
+        if (sortBy === 'highestPriority') {
+          return b.priority.score - a.priority.score;
+        }
+        if (sortBy === 'nearestDistance') {
+          const distA = a.priority.distanceKm ?? 999999;
+          const distB = b.priority.distanceKm ?? 999999;
+          return distA - distB;
+        }
+        if (sortBy === 'earliestExpiry') {
+          return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
+        }
+        if (sortBy === 'latestAdded') {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        return b.priority.score - a.priority.score;
+      });
+
+      setDonations(processedList);
     } catch (err) {
       console.error('Failed to fetch available donations:', err);
     } finally {
       setLoading(false);
     }
-  }, [category, search, location, quantity, expiryStatus, urgentOnly, maxRadiusKm, prefOnly, ngoCoords, ngoProfile]);
+  }, [category, search, location, quantity, expiryStatus, urgentOnly, maxRadiusKm, priorityFilter, sortBy, prefOnly, ngoCoords, ngoProfile]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -153,6 +204,8 @@ const AvailableDonations = () => {
     setQuantity('');
     setExpiryStatus('All');
     setMaxRadiusKm('All');
+    setPriorityFilter('All');
+    setSortBy('highestPriority');
     setUrgentOnly(false);
     setPrefOnly(false);
   };
@@ -198,6 +251,8 @@ const AvailableDonations = () => {
     quantity !== '' ||
     expiryStatus !== 'All' ||
     maxRadiusKm !== 'All' ||
+    priorityFilter !== 'All' ||
+    sortBy !== 'highestPriority' ||
     urgentOnly ||
     prefOnly;
 
@@ -206,7 +261,7 @@ const AvailableDonations = () => {
       <div className="page-header">
         <h1 className="page-title">Available Food Donations</h1>
         <p className="page-subtitle">
-          Browse, filter, and manually review available fresh surplus food donations for NGO redistribution.
+          Browse, filter, and prioritize available fresh surplus food donations for NGO redistribution.
         </p>
       </div>
 
@@ -224,7 +279,7 @@ const AvailableDonations = () => {
 
       {message && <div className="alert alert-success">{message}</div>}
 
-      {/* Advanced Search & Visibility Filter Section */}
+      {/* Advanced Search & Priority Filter Section */}
       <div className="advanced-filter-card" style={{ marginBottom: '1.5rem' }}>
         <form onSubmit={handleSearchSubmit}>
           <div className="filter-grid">
@@ -286,15 +341,31 @@ const AvailableDonations = () => {
               </select>
             </div>
 
-            {/* 5. Expiry Status Filter */}
+            {/* 5. Priority Filter (NEW) */}
             <div className="filter-group">
-              <label className="filter-label">⏳ Expiry Status</label>
+              <label className="filter-label">🎯 Priority Score Tier</label>
               <select
                 className="form-control"
-                value={expiryStatus}
-                onChange={(e) => setExpiryStatus(e.target.value)}
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
               >
-                {EXPIRY_OPTIONS.map((opt) => (
+                {PRIORITY_FILTER_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* 6. Sorting Dropdown (NEW - Default Highest Priority) */}
+            <div className="filter-group">
+              <label className="filter-label">🔀 Sort Order</label>
+              <select
+                className="form-control"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -346,11 +417,13 @@ const AvailableDonations = () => {
         {/* Active Applied Filter Badges */}
         {hasActiveFilters && (
           <div className="active-filter-pills">
-            <span className="pills-label">Active Visibility Filters:</span>
+            <span className="pills-label">Active Filters:</span>
             {search && <span className="filter-pill">Name: "{search}"</span>}
             {category !== 'All' && <span className="filter-pill">Category: {category}</span>}
             {location && <span className="filter-pill">Location: "{location}"</span>}
             {maxRadiusKm !== 'All' && <span className="filter-pill">Radius: &lt; {maxRadiusKm} km</span>}
+            {priorityFilter !== 'All' && <span className="filter-pill">Priority: {priorityFilter}</span>}
+            {sortBy !== 'highestPriority' && <span className="filter-pill">Sorted: {SORT_OPTIONS.find(s=>s.value===sortBy)?.label}</span>}
             {expiryStatus !== 'All' && <span className="filter-pill">Expiry: {expiryStatus}</span>}
             {urgentOnly && <span className="filter-pill urgent">⚡ Near Expiry (&lt; 24h)</span>}
             {prefOnly && <span className="filter-pill">⭐ Category Preferences</span>}
@@ -383,23 +456,22 @@ const AvailableDonations = () => {
       ) : (
         <>
           <div className="results-count-bar" style={{ marginBottom: '1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Showing <strong>{donations.length}</strong> valid available food {donations.length === 1 ? 'donation' : 'donations'} (Expired items filtered out)
+            Showing <strong>{donations.length}</strong> valid available food {donations.length === 1 ? 'donation' : 'donations'} sorted by <strong>{SORT_OPTIONS.find(s=>s.value===sortBy)?.label}</strong>
           </div>
 
           <div className="grid-3">
             {donations.map((donation) => {
-              let distanceKm = null;
-              const dCoords = donation.pickupCoordinates || donation.donorId?.locationCoordinates;
-              if (ngoCoords?.lat != null && dCoords?.lat != null) {
-                distanceKm = calculateHaversineDistance(ngoCoords.lat, ngoCoords.lng, dCoords.lat, dCoords.lng);
-              }
-
-              const isPrefMatch = ngoProfile?.acceptedCategories?.includes(donation.category);
+              const distanceKm = donation.priority?.distanceKm;
+              const isPrefMatch = donation.priority?.isPreferenceMatch;
 
               return (
                 <div key={donation._id} style={{ position: 'relative' }}>
                   <DonationCard
                     donation={donation}
+                    showPriority={true}
+                    ngoCoords={ngoCoords}
+                    ngoProfile={ngoProfile}
+                    priority={donation.priority}
                     detailLink={`/ngo/donations/${donation._id}`}
                     actionButton={
                       <button
@@ -434,3 +506,4 @@ const AvailableDonations = () => {
 };
 
 export default AvailableDonations;
+

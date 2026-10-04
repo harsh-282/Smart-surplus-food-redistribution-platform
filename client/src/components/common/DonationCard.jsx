@@ -1,6 +1,8 @@
 import StatusBadge from './StatusBadge';
 import ExpiryBadge from './ExpiryBadge';
+import PriorityBadge from './PriorityBadge';
 import { getExpiryInfo } from '../../utils/expiryHelper';
+import { calculateDonationPriority } from '../../utils/donationPriorityHelper';
 import { Link } from 'react-router-dom';
 
 const CATEGORY_EMOJI = {
@@ -21,9 +23,13 @@ const formatDate = (dateStr) => {
   });
 };
 
-const DonationCard = ({ donation, detailLink, actionButton }) => {
+const DonationCard = ({ donation, detailLink, actionButton, showPriority = false, ngoCoords = null, ngoProfile = null, priority = null }) => {
   const emoji = CATEGORY_EMOJI[donation.category] || '🍽️';
   const expiryInfo = getExpiryInfo(donation.expiryDate);
+
+  const priorityObj = showPriority || priority
+    ? (priority || calculateDonationPriority(donation, ngoCoords, ngoProfile))
+    : null;
 
   let cardClasses = 'donation-card';
   if (expiryInfo.isExpiringSoon) {
@@ -34,6 +40,18 @@ const DonationCard = ({ donation, detailLink, actionButton }) => {
 
   return (
     <div className={cardClasses}>
+      {/* Smart Priority Card Header Bar */}
+      {priorityObj && !priorityObj.isExpired && (
+        <div className="donation-card-priority-header">
+          <PriorityBadge priority={priorityObj} size="sm" />
+          {priorityObj.isPreferenceMatch && (
+            <span style={{ fontSize: '0.725rem', color: '#60a5fa', fontWeight: 600 }}>
+              ✓ NGO Preference Match
+            </span>
+          )}
+        </div>
+      )}
+
       {expiryInfo.isExpiringSoon && (
         <div className="donation-card-expiring-banner">
           <span>⚡ EXPIRING SOON</span>
@@ -78,7 +96,7 @@ const DonationCard = ({ donation, detailLink, actionButton }) => {
         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
           {formatDate(donation.createdAt)}
         </span>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {actionButton}
           {detailLink && (
             <Link to={detailLink} className="btn btn-secondary btn-sm">View Details</Link>
@@ -90,3 +108,4 @@ const DonationCard = ({ donation, detailLink, actionButton }) => {
 };
 
 export default DonationCard;
+

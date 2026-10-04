@@ -3,6 +3,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
+import PriorityExplanationCard from '../../components/common/PriorityExplanationCard';
+import DonationTimeline from '../../components/common/DonationTimeline';
+import ProofOfDeliveryCard from '../../components/common/ProofOfDeliveryCard';
+import QRDonationBadge from '../../components/common/QRDonationBadge';
+import OTPGeneratorCard from '../../components/common/OTPGeneratorCard';
 import { getExpiryInfo } from '../../utils/expiryHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import FeedbackSection from '../../components/common/FeedbackSection';
@@ -10,17 +15,6 @@ import GoogleMapView from '../../components/common/GoogleMapView';
 import LiveTrackerControls from '../../components/common/LiveTrackerControls';
 
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
-
-const TIMELINE = [
-  { status: 'Available',       icon: '🟢', label: 'Posted' },
-  { status: 'Accepted',        icon: '✅', label: 'Accepted by NGO' },
-  { status: 'Pickup Assigned', icon: '🚴', label: 'Volunteer Assigned' },
-  { status: 'Picked Up',       icon: '📦', label: 'Food Picked Up' },
-  { status: 'Delivered',       icon: '🚚', label: 'Delivered' },
-  { status: 'Completed',       icon: '🎉', label: 'Completed' },
-];
-
-const STATUS_ORDER = ['Available', 'Accepted', 'Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'];
 
 const DonationDetails = () => {
   const { id } = useParams();
@@ -50,12 +44,14 @@ const DonationDetails = () => {
   if (loading) return <LoadingSpinner />;
   if (!donation) return <div className="empty-state"><div className="empty-state-icon">❌</div><div className="empty-state-title">Donation not found</div><Link to="/donor/my-donations" className="btn btn-secondary">Back</Link></div>;
 
-  const currentIdx = STATUS_ORDER.indexOf(donation.status);
   const expiryInfo = getExpiryInfo(donation.expiryDate);
 
   return (
     <div>
       <button onClick={() => navigate(-1)} className="back-btn">← Back to My Donations</button>
+
+      {/* Donor Priority Status Indicator */}
+      <PriorityExplanationCard donation={donation} isDonorView={true} />
 
       {expiryInfo.isExpiringSoon && (
         <div className="detail-expiry-alert soon">
@@ -75,6 +71,19 @@ const DonationDetails = () => {
         </div>
       )}
 
+      {/* Pickup Handover OTP Generator for Donor */}
+      {['Accepted', 'Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'].includes(donation.status) && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <OTPGeneratorCard
+            donation={donation}
+            type="pickup"
+            onOtpStatusChange={() => {
+              api.get(`/donations/${id}`).then(res => setDonation(res.data.donation)).catch(console.error);
+            }}
+          />
+        </div>
+      )}
+
       <div className="grid-2" style={{ alignItems: 'flex-start', gap: '1.5rem' }}>
         {/* Left: Main Info */}
         <div>
@@ -87,7 +96,8 @@ const DonationDetails = () => {
             <div className="detail-body">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{donation.foodName}</h1>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <QRDonationBadge donation={donation} />
                   <StatusBadge status={donation.status} />
                   <ExpiryBadge expiryDate={donation.expiryDate} />
                 </div>
@@ -121,41 +131,18 @@ const DonationDetails = () => {
           </div>
         </div>
 
-        {/* Right: Timeline */}
+        {/* Right: Donation Journey Tracker */}
         <div>
-          <div className="card">
-            <h3 style={{ fontWeight: 700, marginBottom: '1.5rem', fontSize: '1rem' }}>📍 Donation Journey</h3>
-            <div className="timeline">
-              {TIMELINE.map((step, i) => {
-                const stepIdx = STATUS_ORDER.indexOf(step.status);
-                let dotCls = 'pending';
-                if (donation.status === 'Cancelled') {
-                  dotCls = i === 0 ? 'done' : 'pending';
-                } else if (stepIdx < currentIdx) dotCls = 'done';
-                else if (stepIdx === currentIdx) dotCls = 'current';
-                return (
-                  <div key={step.status} className="timeline-item">
-                    <div className={`timeline-dot ${dotCls}`}>{step.icon}</div>
-                    <div className="timeline-content">
-                      <div className="timeline-label" style={{ color: dotCls === 'pending' ? 'var(--text-muted)' : 'var(--text-primary)' }}>{step.label}</div>
-                      {dotCls === 'done' && <p style={{ color: 'var(--green-400)' }}>✓ Completed</p>}
-                      {dotCls === 'current' && <p style={{ color: 'var(--orange-400)' }}>● Current Status</p>}
-                    </div>
-                  </div>
-                );
-              })}
-              {donation.status === 'Cancelled' && (
-                <div className="timeline-item">
-                  <div className="timeline-dot" style={{ background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444' }}>❌</div>
-                  <div className="timeline-content">
-                    <div className="timeline-label" style={{ color: '#ef4444' }}>Cancelled</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <DonationTimeline donation={donation} currentRole="Donor" />
         </div>
       </div>
+
+      {/* Digital Proof of Delivery Card for Donor */}
+      {['Delivered', 'Completed'].includes(donation.status) && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <ProofOfDeliveryCard donation={donation} currentRole="Donor" />
+        </div>
+      )}
 
       {/* Live Delivery Tracking Map */}
       {['Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'].includes(donation.status) && (

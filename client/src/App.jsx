@@ -23,6 +23,7 @@ import DonorProfile from './pages/donor/Profile';
 // NGO Pages
 import NGODashboard from './pages/ngo/NGODashboard';
 import AvailableDonations from './pages/ngo/AvailableDonations';
+import NearbyDonationsPage from './pages/ngo/NearbyDonationsPage';
 import AcceptedDonations from './pages/ngo/AcceptedDonations';
 import NGODonationDetails from './pages/ngo/NGODonationDetails';
 import NGOProfile from './pages/ngo/NGOProfile';
@@ -36,11 +37,14 @@ import VolunteerProfile from './pages/volunteer/VolunteerProfile';
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
+import VerificationManagement from './pages/admin/VerificationManagement';
 import DonationManagement from './pages/admin/DonationManagement';
 import AdminDonationDetails from './pages/admin/AdminDonationDetails';
 
 // Loading
 import LoadingSpinner from './components/common/LoadingSpinner';
+
+import QRRedirect from './components/common/QRRedirect';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -64,6 +68,7 @@ function AppRoutes() {
         <Route path="/about" element={<About />} />
         <Route path="/login" element={user ? <Navigate to={`/${user.role}/dashboard`} /> : <Login />} />
         <Route path="/register" element={user ? <Navigate to={`/${user.role}/dashboard`} /> : <Register />} />
+        <Route path="/donations/qr/:qrDonationId" element={<ProtectedRoute><QRRedirect /></ProtectedRoute>} />
       </Route>
 
       {/* Donor Routes */}
@@ -87,6 +92,7 @@ function AppRoutes() {
       }>
         <Route path="dashboard" element={<NGODashboard />} />
         <Route path="available" element={<AvailableDonations />} />
+        <Route path="nearby-donations" element={<NearbyDonationsPage />} />
         <Route path="accepted" element={<AcceptedDonations />} />
         <Route path="donations/:id" element={<NGODonationDetails />} />
         <Route path="profile" element={<NGOProfile />} />
@@ -111,6 +117,7 @@ function AppRoutes() {
         </ProtectedRoute>
       }>
         <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="verification" element={<VerificationManagement />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="donations" element={<DonationManagement />} />
         <Route path="donations/:id" element={<AdminDonationDetails />} />

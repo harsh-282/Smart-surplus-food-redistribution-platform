@@ -75,8 +75,13 @@ const getAssignedDeliveries = async (req, res) => {
 const getAvailableVolunteers = async (req, res) => {
   try {
     const volunteers = await Volunteer.find({ availability: 'Available' })
-      .populate('userId', 'name email phone');
-    res.status(200).json({ success: true, volunteers });
+      .populate('userId', 'name email phone verificationStatus');
+
+    const verifiedVolunteers = volunteers.filter(
+      (v) => v.userId && v.userId.verificationStatus === 'Verified'
+    );
+
+    res.status(200).json({ success: true, volunteers: verifiedVolunteers });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -95,8 +100,10 @@ const getSuitableVolunteers = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Donation not found.' });
     }
 
-    const allVolunteers = await Volunteer.find().populate('userId', 'name email phone address locationCoordinates isActive');
-    const activeVolunteers = allVolunteers.filter(v => v.userId && v.userId.isActive !== false);
+    const allVolunteers = await Volunteer.find().populate('userId', 'name email phone address locationCoordinates isActive verificationStatus');
+    const activeVolunteers = allVolunteers.filter(
+      (v) => v.userId && v.userId.isActive !== false && v.userId.verificationStatus === 'Verified'
+    );
 
     const evaluatedVolunteers = await Promise.all(
       activeVolunteers.map(async (v) => {

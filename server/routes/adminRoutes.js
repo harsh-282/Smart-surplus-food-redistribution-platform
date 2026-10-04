@@ -8,6 +8,9 @@ const {
   getAllDonations,
   adminCancelDonation,
   getAnalytics,
+  getVerificationRequests,
+  getUserVerificationDetails,
+  updateUserVerificationStatus,
 } = require('../controllers/adminController');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
@@ -22,5 +25,11 @@ router.put('/users/:id/toggle', toggleUserStatus);
 router.get('/donations', getAllDonations);
 router.put('/donations/:id/cancel', adminCancelDonation);
 
+// Verification routes
+router.get('/verification-requests', getVerificationRequests);
+router.get('/verification-details/:id', getUserVerificationDetails);
+router.put('/verify-user/:id', updateUserVerificationStatus);
+
 module.exports = router;
+
 

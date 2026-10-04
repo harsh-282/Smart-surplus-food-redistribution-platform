@@ -3,10 +3,17 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
 import StatusBadge from '../../components/common/StatusBadge';
 import ExpiryBadge from '../../components/common/ExpiryBadge';
+import PriorityExplanationCard from '../../components/common/PriorityExplanationCard';
+import PriorityBadge from '../../components/common/PriorityBadge';
 import { getExpiryInfo } from '../../utils/expiryHelper';
+import { geocodeAddress } from '../../utils/distanceHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import FeedbackSection from '../../components/common/FeedbackSection';
 import SmartVolunteerSelector from '../../components/common/SmartVolunteerSelector';
+import DonationTimeline from '../../components/common/DonationTimeline';
+import ProofOfDeliveryCard from '../../components/common/ProofOfDeliveryCard';
+import QRDonationBadge from '../../components/common/QRDonationBadge';
+import OTPGeneratorCard from '../../components/common/OTPGeneratorCard';
 import GoogleMapView from '../../components/common/GoogleMapView';
 import LiveTrackerControls from '../../components/common/LiveTrackerControls';
 
@@ -16,6 +23,8 @@ const NGODonationDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [donation, setDonation] = useState(null);
+  const [ngoProfile, setNgoProfile] = useState(null);
+  const [ngoCoords, setNgoCoords] = useState(null);
   const [volunteers, setVolunteers] = useState([]);
   const [selectedVolunteer, setSelectedVolunteer] = useState('');
   const [loading, setLoading] = useState(true);
@@ -27,11 +36,22 @@ const NGODonationDetails = () => {
   useEffect(() => {
     Promise.all([
       api.get(`/donations/${id}`),
-      api.get('/volunteer/available')
+      api.get('/volunteer/available'),
+      api.get('/ngo/profile').catch(() => ({ data: null })),
     ])
-      .then(([donRes, volRes]) => {
+      .then(async ([donRes, volRes, ngoRes]) => {
         setDonation(donRes.data.donation);
         setVolunteers(volRes.data.volunteers);
+        if (ngoRes?.data?.ngo) {
+          setNgoProfile(ngoRes.data.ngo);
+          const coords = ngoRes.data.ngo.locationCoordinates || ngoRes.data.ngo.userId?.locationCoordinates;
+          if (coords?.lat != null && coords?.lng != null) {
+            setNgoCoords(coords);
+          } else if (ngoRes.data.ngo.address) {
+            const geo = await geocodeAddress(ngoRes.data.ngo.address);
+            if (geo) setNgoCoords(geo);
+          }
+        }
       })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
@@ -95,6 +115,13 @@ const NGODonationDetails = () => {
         <p className="page-subtitle">Redistribution detail, status updates, and logistics coordination.</p>
       </div>
 
+      {/* Transparent Smart Priority Score Breakdown Card */}
+      <PriorityExplanationCard
+        donation={donation}
+        ngoCoords={ngoCoords}
+        ngoProfile={ngoProfile}
+      />
+
       {expiryInfo.isExpiringSoon && donation.status === 'Available' && (
         <div className="detail-expiry-alert soon">
           <span>⚡</span>
@@ -116,6 +143,19 @@ const NGODonationDetails = () => {
       {successMsg && <div className="alert alert-success">{successMsg}</div>}
       {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
 
+      {/* Delivery Handover OTP Generator for NGO */}
+      {['Picked Up', 'Delivered', 'Completed'].includes(donation.status) && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <OTPGeneratorCard
+            donation={donation}
+            type="delivery"
+            onOtpStatusChange={() => {
+              api.get(`/donations/${id}`).then(res => setDonation(res.data.donation)).catch(console.error);
+            }}
+          />
+        </div>
+      )}
+
       <div className="grid-2" style={{ alignItems: 'flex-start', gap: '1.5rem' }}>
         {/* Info Card */}
         <div className="detail-header">
@@ -127,8 +167,10 @@ const NGODonationDetails = () => {
           <div className="detail-body">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Donation Information</h2>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <QRDonationBadge donation={donation} />
                 <StatusBadge status={donation.status} />
+                <PriorityBadge donation={donation} ngoCoords={ngoCoords} ngoProfile={ngoProfile} />
                 <ExpiryBadge expiryDate={donation.expiryDate} />
               </div>
             </div>
@@ -216,6 +258,22 @@ const NGODonationDetails = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Digital Proof of Delivery Card */}
+      {['Delivered', 'Completed'].includes(donation.status) && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <ProofOfDeliveryCard
+            donation={donation}
+            currentRole="NGO"
+            onConfirmed={(updatedDonation) => setDonation(updatedDonation)}
+          />
+        </div>
+      )}
+
+      {/* Donation Journey Tracker */}
+      <div style={{ marginTop: '1.5rem' }}>
+        <DonationTimeline donation={donation} currentRole="NGO" />
       </div>
 
       {/* Live GPS Tracking & Google Map View */}

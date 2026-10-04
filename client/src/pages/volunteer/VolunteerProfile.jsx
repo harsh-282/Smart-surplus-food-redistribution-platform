@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
+import VerificationBadge from '../../components/common/VerificationBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const VolunteerProfile = () => {
@@ -63,10 +64,15 @@ const VolunteerProfile = () => {
         name: form.name,
         phone: form.phone,
         address: form.address,
+        resubmitVerification: user?.verificationStatus === 'Rejected',
       });
 
       updateUser(userRes.data.user);
-      setSuccess('✅ Profile and volunteer settings updated successfully!');
+      setSuccess(
+        user?.verificationStatus === 'Rejected'
+          ? '✅ Profile updated and verification request resubmitted to admin for review!'
+          : '✅ Profile and volunteer settings updated successfully!'
+      );
     } catch (err) {
       setError(err.response?.data?.message || 'Update failed.');
     } finally {
@@ -97,11 +103,12 @@ const VolunteerProfile = () => {
           </div>
           <h2 style={{ fontWeight: 800, fontSize: '1.25rem', marginBottom: '0.35rem' }}>{form.name}</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '1.25rem' }}>{user?.email}</p>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '1.25rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
             <span className={`badge ${form.availability === 'Available' ? 'badge-available' : 'badge-cancelled'}`}>
               Availability: {form.availability}
             </span>
             <span className="badge badge-volunteer">🚴 Volunteer</span>
+            <VerificationBadge status={user?.verificationStatus} role="volunteer" size="xs" />
           </div>
           <div className="divider" />
           <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

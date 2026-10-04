@@ -18,7 +18,7 @@ const AnalyticsCharts = ({ charts }) => {
 
   if (!charts) return null;
 
-  const { statusDistribution = [], categoryDistribution = [], monthlyStats = [], completedVsExpired = {} } = charts;
+  const { statusDistribution = [], categoryDistribution = [], priorityDistribution = [], monthlyStats = [], completedVsExpired = {} } = charts;
 
   // Calculate totals
   const totalStatusCount = statusDistribution.reduce((acc, cur) => acc + cur.count, 0);
@@ -121,6 +121,47 @@ const AnalyticsCharts = ({ charts }) => {
             </div>
           )}
         </div>
+
+        {/* Chart 3: Smart Priority Distribution */}
+        {priorityDistribution && priorityDistribution.length > 0 && (
+          <div className="chart-card">
+            <div className="chart-header">
+              <h4>🎯 Donation Priority Distribution</h4>
+              <span className="chart-badge">Active Surplus Food</span>
+            </div>
+            <p className="chart-desc">Real-time redistribution urgency breakdown for active available items.</p>
+
+            <div className="status-bars-container">
+              {priorityDistribution.map((item) => {
+                const totalPriority = priorityDistribution.reduce((acc, cur) => acc + cur.count, 0);
+                const percentage = totalPriority > 0 ? Math.round((item.count / totalPriority) * 100) : 0;
+
+                return (
+                  <div key={item.level} className="status-bar-item">
+                    <div className="status-bar-info">
+                      <span className="status-bar-label">
+                        <span className="color-dot" style={{ backgroundColor: item.color }} />
+                        {item.label}
+                      </span>
+                      <span className="status-bar-count">
+                        <strong>{item.count}</strong> items ({percentage}%)
+                      </span>
+                    </div>
+                    <div className="status-progress-track">
+                      <div
+                        className="status-progress-fill"
+                        style={{
+                          width: `${percentage}%`,
+                          backgroundColor: item.color,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Chart 3: Monthly Donation Statistics */}
         <div className="chart-card full-width">

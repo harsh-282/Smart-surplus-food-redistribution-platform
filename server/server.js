@@ -12,6 +12,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const trackingRoutes = require('./routes/trackingRoutes');
+const podRoutes = require('./routes/podRoutes');
+const otpRoutes = require('./routes/otpRoutes');
 
 // Connect to MongoDB
 connectDB();
@@ -48,6 +50,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/tracking', trackingRoutes);
+app.use('/api/pod', podRoutes);
+app.use('/api/otp', otpRoutes);
 
 // Root route
 app.get('/', (req, res) => {

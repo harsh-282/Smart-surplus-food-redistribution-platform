@@ -7,6 +7,9 @@ import { getExpiryInfo } from '../../utils/expiryHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import FeedbackSection from '../../components/common/FeedbackSection';
 import SmartVolunteerSelector from '../../components/common/SmartVolunteerSelector';
+import DonationTimeline from '../../components/common/DonationTimeline';
+import ProofOfDeliveryCard from '../../components/common/ProofOfDeliveryCard';
+import QRDonationBadge from '../../components/common/QRDonationBadge';
 import GoogleMapView from '../../components/common/GoogleMapView';
 import LiveTrackerControls from '../../components/common/LiveTrackerControls';
 
@@ -91,7 +94,8 @@ const AdminDonationDetails = () => {
           <div className="detail-body">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Listing Information</h2>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <QRDonationBadge donation={donation} />
                 <StatusBadge status={donation.status} />
                 <ExpiryBadge expiryDate={donation.expiryDate} />
               </div>
@@ -183,7 +187,52 @@ const AdminDonationDetails = () => {
               ✓ Donation has been completed and delivered safely. No further audit action needed.
             </div>
           )}
+
+          {/* OTP Handover Audit Box for Admin */}
+          <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color, #e2e8f0)' }}>
+            <h4 style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              🔑 Handover OTP Verification Audit
+            </h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.85rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
+                <span>Pickup Handover OTP:</span>
+                {donation.pickupOtpUsed ? (
+                  <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>
+                    ✓ Verified ({formatDateTime(donation.pickupOtpVerifiedAt)})
+                  </span>
+                ) : (
+                  <span className="badge badge-warning" style={{ fontSize: '0.75rem' }}>
+                    ● Pending Verification
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
+                <span>Delivery Handover OTP:</span>
+                {donation.deliveryOtpUsed ? (
+                  <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>
+                    ✓ Verified ({formatDateTime(donation.deliveryOtpVerifiedAt)})
+                  </span>
+                ) : (
+                  <span className="badge badge-warning" style={{ fontSize: '0.75rem' }}>
+                    ● Pending Verification
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* Digital Proof of Delivery Card for Admin Audit */}
+      {['Delivered', 'Completed'].includes(donation.status) && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <ProofOfDeliveryCard donation={donation} currentRole="Admin" />
+        </div>
+      )}
+
+      {/* Donation Journey Tracker */}
+      <div style={{ marginTop: '1.5rem' }}>
+        <DonationTimeline donation={donation} currentRole="Admin" />
       </div>
 
       {/* Admin Audit Live Tracking Map */}

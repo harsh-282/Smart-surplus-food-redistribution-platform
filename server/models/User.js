@@ -45,6 +45,40 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Account Verification Fields
+    verificationStatus: {
+      type: String,
+      enum: ['Pending', 'Verified', 'Rejected', 'Suspended'],
+      default: function () {
+        return this.role === 'ngo' || this.role === 'volunteer' ? 'Pending' : 'Verified';
+      },
+    },
+    verificationSubmittedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    verificationVerifiedAt: {
+      type: Date,
+      default: null,
+    },
+    verificationRejectedAt: {
+      type: Date,
+      default: null,
+    },
+    verificationSuspendedAt: {
+      type: Date,
+      default: null,
+    },
+    verificationReviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    verificationRejectionReason: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   { timestamps: true }
 );

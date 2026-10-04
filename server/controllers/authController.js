@@ -63,6 +63,7 @@ const register = async (req, res) => {
         phone: user.phone,
         role: user.role,
         address: user.address,
+        verificationStatus: user.verificationStatus || 'Pending',
         createdAt: user.createdAt,
       },
     });
@@ -109,6 +110,7 @@ const login = async (req, res) => {
         phone: user.phone,
         role: user.role,
         address: user.address,
+        verificationStatus: user.verificationStatus || (user.role === 'donor' || user.role === 'admin' ? 'Verified' : 'Pending'),
         createdAt: user.createdAt,
       },
     });
@@ -129,18 +131,31 @@ const getMe = async (req, res) => {
   }
 };
 
-// @desc    Update current user profile
+// @desc    Update current user profile & option to resubmit verification
 // @route   PUT /api/auth/me
 // @access  Private
 const updateMe = async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { name, phone, address },
-      { new: true, runValidators: true }
-    );
-    res.status(200).json({ success: true, message: 'Profile updated!', user });
+    const { name, phone, address, resubmitVerification } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+
+    // Resubmit verification if requested by NGO/Volunteer in Rejected state
+    if (resubmitVerification && ['ngo', 'volunteer'].includes(user.role)) {
+      user.verificationStatus = 'Pending';
+      user.verificationSubmittedAt = new Date();
+      user.verificationRejectionReason = '';
+    }
+
+    await user.save();
+    res.status(200).json({ success: true, message: 'Profile updated successfully!', user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

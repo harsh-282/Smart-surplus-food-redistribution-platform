@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import StatCard from '../../components/common/StatCard';
 import StatusBadge from '../../components/common/StatusBadge';
+import VerificationBadge from '../../components/common/VerificationBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import RouteDistanceCard from '../../components/common/RouteDistanceCard';
 
@@ -42,10 +43,62 @@ const VolunteerDashboard = () => {
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Welcome back, {user?.name?.split(' ')[0]}! 🚴</h1>
-        <p className="page-subtitle">Manage your assigned pickups and update donation delivery progress.</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h1 className="page-title">Welcome back, {user?.name?.split(' ')[0]}! 🚴</h1>
+          <p className="page-subtitle">Manage your assigned pickups and update donation delivery progress.</p>
+        </div>
+        <div>
+          <VerificationBadge status={user?.verificationStatus} role="volunteer" size="md" />
+        </div>
       </div>
+
+      {user?.verificationStatus !== 'Verified' && (
+        <div
+          style={{
+            marginBottom: '1.5rem',
+            padding: '1.25rem',
+            borderRadius: '1rem',
+            border: '1px solid',
+            backgroundColor:
+              user?.verificationStatus === 'Rejected'
+                ? '#fef2f2'
+                : user?.verificationStatus === 'Suspended'
+                ? '#f3f4f6'
+                : '#fffbeb',
+            borderColor:
+              user?.verificationStatus === 'Rejected'
+                ? '#fca5a5'
+                : user?.verificationStatus === 'Suspended'
+                ? '#d1d5db'
+                : '#fde68a',
+            color:
+              user?.verificationStatus === 'Rejected'
+                ? '#991b1b'
+                : user?.verificationStatus === 'Suspended'
+                ? '#1f2937'
+                : '#92400e',
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {user?.verificationStatus === 'Rejected' ? '⚠️ Volunteer Verification Not Approved' : user?.verificationStatus === 'Suspended' ? '🚫 Account Suspended' : '⏳ Volunteer Account Pending Verification'}
+          </div>
+          <p style={{ fontSize: '0.875rem', margin: 0 }}>
+            {user?.verificationStatus === 'Rejected'
+              ? `Reason: "${user?.verificationRejectionReason || 'Profile details incomplete.'}" Please update your volunteer profile and resubmit.`
+              : user?.verificationStatus === 'Suspended'
+              ? 'Your volunteer account is currently suspended. You cannot receive new delivery assignments or perform OTP handovers.'
+              : 'Your volunteer account is awaiting admin verification. New food delivery assignments will be enabled after your account is approved.'}
+          </p>
+          {user?.verificationStatus === 'Rejected' && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <Link to="/volunteer/profile" className="btn btn-primary btn-sm">
+                Update Profile & Resubmit
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Stats row */}
       <div className="grid-4" style={{ marginBottom: '2rem' }}>

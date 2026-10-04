@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import NotificationBell from './NotificationBell';
+import QRScannerModal from './QRScannerModal';
 
 const ROLE_NAV_LINKS = {
   donor: [
@@ -14,6 +15,7 @@ const ROLE_NAV_LINKS = {
   ngo: [
     { to: '/ngo/dashboard', label: '📊 Dashboard' },
     { to: '/ngo/available', label: '🌿 Available Donations' },
+    { to: '/ngo/nearby-donations', label: '🗺️ Nearby Donations' },
     { to: '/ngo/accepted', label: '✅ Accepted Donations' },
     { to: '/ngo/profile', label: '👤 Profile' },
   ],
@@ -24,6 +26,7 @@ const ROLE_NAV_LINKS = {
   ],
   admin: [
     { to: '/admin/dashboard', label: '📊 Dashboard' },
+    { to: '/admin/verification', label: '🛡️ Verification' },
     { to: '/admin/users', label: '👥 Users' },
     { to: '/admin/donations', label: '🍽️ Donations' },
   ],
@@ -35,6 +38,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const handleLogout = () => {
     setMobileOpen(false);
@@ -84,6 +88,15 @@ const Navbar = () => {
 
           {user ? (
             <>
+              <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                className="btn btn-secondary btn-sm"
+                style={{ gap: '0.3rem', padding: '0.35rem 0.6rem' }}
+                title="Scan FoodShare QR Code"
+              >
+                📷 Scan QR
+              </button>
               <NotificationBell />
               <div className="user-avatar" title={`${user.name} (${user.role})`}>{getInitials(user.name)}</div>
               <button onClick={handleLogout} className="btn btn-secondary btn-sm desktop-only">
@@ -172,6 +185,11 @@ const Navbar = () => {
           </div>
         </div>
       )}
+      {/* Global QR Camera Scanner Modal */}
+      <QRScannerModal
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+      />
     </nav>
   );
 };

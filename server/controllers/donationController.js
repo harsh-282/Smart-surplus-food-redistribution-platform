@@ -4,6 +4,25 @@ const NGO = require('../models/NGO');
 const cloudinary = require('../config/cloudinary');
 const { isExpired } = require('../utils/expiryHelper');
 const { createNotification, notifyMultipleUsers } = require('../utils/notificationHelper');
+const { generateUniqueQrDonationId, ensureQrDonationId } = require('../utils/qrHelper');
+
+// Helper to push status history entries cleanly (preventing duplicate consecutive entries)
+const addStatusHistory = (donation, status, message, user = null) => {
+  if (!donation.statusHistory) {
+    donation.statusHistory = [];
+  }
+  const lastEntry = donation.statusHistory[donation.statusHistory.length - 1];
+  if (lastEntry && lastEntry.status === status) {
+    return;
+  }
+  donation.statusHistory.push({
+    status,
+    timestamp: new Date(),
+    message: message || `Status updated to ${status}.`,
+    updatedBy: user?._id || (typeof user === 'string' ? user : null),
+    role: user?.role || '',
+  });
+};
 
 // @desc    Create a donation
 // @route   POST /api/donations
@@ -42,7 +61,9 @@ const createDonation = async (req, res) => {
       };
     }
 
-    const donation = await Donation.create({
+    const qrDonationId = await generateUniqueQrDonationId();
+
+    const donation = new Donation({
       donorId: req.user._id,
       foodName,
       category,
@@ -52,10 +73,23 @@ const createDonation = async (req, res) => {
       expiryDate: expDate,
       pickupAddress,
       description,
+      status: 'Available',
+      qrDonationId,
+      qrCreatedAt: new Date(),
     });
 
+    addStatusHistory(
+      donation,
+      'Available',
+      'Donor created a new surplus food donation. Listed as available for NGO redistribution.',
+      req.user
+    );
+
+    await donation.save();
+
     const populated = await Donation.findById(donation._id)
-      .populate('donorId', 'name email phone address');
+      .populate('donorId', 'name email phone address')
+      .populate('statusHistory.updatedBy', 'name role email');
 
     // 1. Notify the donor of successful creation
     await createNotification({
@@ -172,14 +206,17 @@ const getDonations = async (req, res) => {
 // @access  Private
 const getDonation = async (req, res) => {
   try {
-    const donation = await Donation.findById(req.params.id)
+    let donation = await Donation.findById(req.params.id)
       .populate('donorId', 'name email phone address locationCoordinates')
       .populate('acceptedBy', 'name email phone address locationCoordinates')
-      .populate('volunteerId', 'name email phone');
+      .populate('volunteerId', 'name email phone')
+      .populate('statusHistory.updatedBy', 'name role email');
 
     if (!donation) {
       return res.status(404).json({ success: false, message: 'Donation not found.' });
     }
+
+    donation = await ensureQrDonationId(donation);
 
     const donationObj = donation.toObject();
     if (donation.acceptedBy) {
@@ -192,7 +229,141 @@ const getDonation = async (req, res) => {
       }
     }
 
+    // Dynamic fallback for legacy records created prior to statusHistory schema additions
+    if (!donationObj.statusHistory || donationObj.statusHistory.length === 0) {
+      donationObj.statusHistory = [
+        {
+          status: 'Available',
+          timestamp: donationObj.createdAt,
+          message: 'Donor created a new surplus food donation.',
+          role: 'donor',
+          updatedBy: donationObj.donorId,
+        }
+      ];
+
+      if (['Accepted', 'Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'].includes(donationObj.status) && donationObj.acceptedBy) {
+        donationObj.statusHistory.push({
+          status: 'Accepted',
+          timestamp: donationObj.updatedAt,
+          message: 'Food donation claimed by NGO for redistribution.',
+          role: 'ngo',
+          updatedBy: donationObj.acceptedBy,
+        });
+      }
+
+      if (['Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'].includes(donationObj.status) && donationObj.volunteerId) {
+        donationObj.statusHistory.push({
+          status: 'Pickup Assigned',
+          timestamp: donationObj.updatedAt,
+          message: 'Delivery volunteer assigned for pickup.',
+          role: 'ngo',
+          updatedBy: donationObj.volunteerId,
+        });
+      }
+
+      if (['Picked Up', 'Delivered', 'Completed'].includes(donationObj.status)) {
+        donationObj.statusHistory.push({
+          status: 'Picked Up',
+          timestamp: donationObj.updatedAt,
+          message: 'Food collected from donor pickup location.',
+          role: 'volunteer',
+          updatedBy: donationObj.volunteerId,
+        });
+      }
+
+      if (['Delivered', 'Completed'].includes(donationObj.status)) {
+        donationObj.statusHistory.push({
+          status: 'Delivered',
+          timestamp: donationObj.updatedAt,
+          message: 'Surplus food delivered to NGO center.',
+          role: 'volunteer',
+          updatedBy: donationObj.volunteerId,
+        });
+      }
+
+      if (donationObj.status === 'Completed') {
+        donationObj.statusHistory.push({
+          status: 'Completed',
+          timestamp: donationObj.updatedAt,
+          message: 'Donation workflow and redistribution completed.',
+          role: 'ngo',
+        });
+      }
+
+      if (donationObj.status === 'Cancelled') {
+        donationObj.statusHistory.push({
+          status: 'Cancelled',
+          timestamp: donationObj.updatedAt,
+          message: 'Donation was cancelled.',
+        });
+      }
+    }
+
     res.status(200).json({ success: true, donation: donationObj });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get donation by QR Donation ID (with role authorization)
+// @route   GET /api/donations/qr/:qrDonationId
+// @access  Private (Role Authorized)
+const getDonationByQr = async (req, res) => {
+  try {
+    const { qrDonationId } = req.params;
+
+    let donation = await Donation.findOne({ qrDonationId })
+      .populate('donorId', 'name email phone address locationCoordinates')
+      .populate('acceptedBy', 'name email phone address locationCoordinates')
+      .populate('volunteerId', 'name email phone')
+      .populate('statusHistory.updatedBy', 'name role email');
+
+    if (!donation) {
+      // Fallback: If passed ID is a valid ObjectId, search by _id
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(qrDonationId);
+      if (isObjectId) {
+        donation = await Donation.findById(qrDonationId)
+          .populate('donorId', 'name email phone address locationCoordinates')
+          .populate('acceptedBy', 'name email phone address locationCoordinates')
+          .populate('volunteerId', 'name email phone')
+          .populate('statusHistory.updatedBy', 'name role email');
+      }
+    }
+
+    if (!donation) {
+      return res.status(404).json({
+        success: false,
+        message: 'No matching surplus food donation found for the scanned QR code.',
+      });
+    }
+
+    donation = await ensureQrDonationId(donation);
+
+    // Role-based Authorization check
+    const userIdStr = req.user._id.toString();
+    const role = req.user.role;
+    let isAuthorized = false;
+
+    if (role === 'admin') {
+      isAuthorized = true;
+    } else if (role === 'donor') {
+      isAuthorized = donation.donorId?._id?.toString() === userIdStr;
+    } else if (role === 'ngo') {
+      // NGO can view available donations OR donations they claimed
+      isAuthorized = donation.status === 'Available' || donation.acceptedBy?._id?.toString() === userIdStr;
+    } else if (role === 'volunteer') {
+      // Volunteer can view assigned donations
+      isAuthorized = donation.volunteerId?._id?.toString() === userIdStr;
+    }
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access Denied: You do not have permission to access this donation record.',
+      });
+    }
+
+    res.status(200).json({ success: true, donation });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -203,6 +374,13 @@ const getDonation = async (req, res) => {
 // @access  NGO
 const acceptDonation = async (req, res) => {
   try {
+    if (req.user.verificationStatus !== 'Verified') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your NGO account is pending verification or is not approved. You can claim donations after admin approval.',
+      });
+    }
+
     const donation = await Donation.findById(req.params.id);
 
     if (!donation) {
@@ -223,11 +401,20 @@ const acceptDonation = async (req, res) => {
 
     donation.status = 'Accepted';
     donation.acceptedBy = req.user._id;
+
+    addStatusHistory(
+      donation,
+      'Accepted',
+      `${req.user.name || 'NGO'} claimed this food donation for community redistribution.`,
+      req.user
+    );
+
     await donation.save();
 
     const populated = await Donation.findById(donation._id)
       .populate('donorId', 'name email phone address')
-      .populate('acceptedBy', 'name email phone');
+      .populate('acceptedBy', 'name email phone')
+      .populate('statusHistory.updatedBy', 'name role email');
 
     // Notify the donor that their donation was accepted
     await createNotification({
@@ -251,7 +438,25 @@ const acceptDonation = async (req, res) => {
 // @access  NGO, Admin
 const assignVolunteer = async (req, res) => {
   try {
+    if (req.user.role === 'ngo' && req.user.verificationStatus !== 'Verified') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your NGO account is pending verification. Only verified NGOs can assign volunteers.',
+      });
+    }
+
     const { volunteerId } = req.body;
+    const volunteerUser = await User.findById(volunteerId);
+    if (!volunteerUser || volunteerUser.role !== 'volunteer') {
+      return res.status(400).json({ success: false, message: 'Invalid volunteer specified.' });
+    }
+    if (volunteerUser.verificationStatus !== 'Verified') {
+      return res.status(403).json({
+        success: false,
+        message: 'Selected volunteer account is not verified or is suspended. Only verified volunteers can receive delivery assignments.',
+      });
+    }
+
     const donation = await Donation.findById(req.params.id);
 
     if (!donation) {
@@ -264,12 +469,21 @@ const assignVolunteer = async (req, res) => {
 
     donation.volunteerId = volunteerId;
     donation.status = 'Pickup Assigned';
+
+    addStatusHistory(
+      donation,
+      'Pickup Assigned',
+      'Delivery volunteer assigned for pickup and transport.',
+      req.user
+    );
+
     await donation.save();
 
     const populated = await Donation.findById(donation._id)
       .populate('donorId', 'name email phone address')
       .populate('acceptedBy', 'name email phone')
-      .populate('volunteerId', 'name email phone');
+      .populate('volunteerId', 'name email phone')
+      .populate('statusHistory.updatedBy', 'name role email');
 
     // 1. Notify the assigned volunteer
     await createNotification({
@@ -322,12 +536,27 @@ const updateStatus = async (req, res) => {
     }
 
     donation.status = status;
+
+    const statusMessages = {
+      'Picked Up': 'Volunteer collected food from the donor pickup location.',
+      'Delivered': 'Surplus food delivered to NGO center.',
+      'Completed': 'Donation redistribution workflow completed successfully.',
+    };
+
+    addStatusHistory(
+      donation,
+      status,
+      statusMessages[status] || `Status updated to ${status}.`,
+      req.user
+    );
+
     await donation.save();
 
     const populated = await Donation.findById(donation._id)
       .populate('donorId', 'name email phone address')
       .populate('acceptedBy', 'name email phone')
-      .populate('volunteerId', 'name email phone');
+      .populate('volunteerId', 'name email phone')
+      .populate('statusHistory.updatedBy', 'name role email');
 
     // Notify relevant users based on new status
     const statusNotifications = {
@@ -407,6 +636,13 @@ const cancelDonation = async (req, res) => {
     }
 
     donation.status = 'Cancelled';
+    addStatusHistory(
+      donation,
+      'Cancelled',
+      `Donation was cancelled by ${req.user.role === 'admin' ? 'administrator' : 'donor'}.`,
+      req.user
+    );
+
     await donation.save();
 
     // Notify NGO if accepted
@@ -474,6 +710,7 @@ module.exports = {
   createDonation,
   getDonations,
   getDonation,
+  getDonationByQr,
   acceptDonation,
   assignVolunteer,
   updateStatus,

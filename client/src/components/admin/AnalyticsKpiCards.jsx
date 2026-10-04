@@ -42,7 +42,7 @@ const AnalyticsKpiCards = ({ kpis }) => {
       </div>
 
       {/* Row 2: Workflow & Logistics Status */}
-      <div className="analytics-grid-5">
+      <div className="analytics-grid-5" style={{ marginBottom: '1.25rem' }}>
         <StatCard
           icon="🟢"
           value={kpis.availableDonations || 0}
@@ -72,6 +72,34 @@ const AnalyticsKpiCards = ({ kpis }) => {
           value={kpis.expiredDonations || 0}
           label="Expired Donations"
           colorClass="red"
+        />
+      </div>
+
+      {/* Row 3: Active Smart Priority Breakdown */}
+      <div className="analytics-grid-4">
+        <StatCard
+          icon="🔴"
+          value={kpis.criticalPriority || 0}
+          label="Critical Priority"
+          colorClass="red"
+        />
+        <StatCard
+          icon="🟠"
+          value={kpis.highPriority || 0}
+          label="High Priority"
+          colorClass="orange"
+        />
+        <StatCard
+          icon="🟡"
+          value={kpis.mediumPriority || 0}
+          label="Medium Priority"
+          colorClass="orange"
+        />
+        <StatCard
+          icon="🟢"
+          value={kpis.normalPriority || 0}
+          label="Normal Priority"
+          colorClass="green"
         />
       </div>
     </div>
