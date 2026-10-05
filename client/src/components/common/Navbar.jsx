@@ -98,7 +98,14 @@ const Navbar = () => {
                 📷 Scan QR
               </button>
               <NotificationBell />
-              <div className="user-avatar" title={`${user.name} (${user.role})`}>{getInitials(user.name)}</div>
+              <div
+                className="user-avatar"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                style={{ cursor: 'pointer' }}
+                title={`${user.name} (${user.role})`}
+              >
+                {getInitials(user.name)}
+              </div>
               <button onClick={handleLogout} className="btn btn-secondary btn-sm desktop-only">
                 Logout
               </button>

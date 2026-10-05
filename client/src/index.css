@@ -2371,6 +2371,29 @@ tr:hover td { background: var(--bg-table-hover); }
   box-shadow: var(--shadow-sm);
 }
 
+.mobile-subnav-logout {
+  background: rgba(239, 68, 68, 0.08) !important;
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+  cursor: pointer;
+}
+
+.mobile-subnav-logout:hover,
+.mobile-subnav-logout:active {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 480px) {
+  .navbar-user {
+    gap: 0.35rem;
+  }
+  .navbar-user .btn-sm {
+    padding: 0.35rem 0.45rem;
+    font-size: 0.75rem;
+  }
+}
+
 /* 5. Comprehensive Table & Overflow Safeguards */
 .table-wrapper {
   overflow-x: auto;

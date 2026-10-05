@@ -108,6 +108,14 @@ const DashboardLayout = ({ role }) => {
                 <span className="mobile-subnav-text">{label}</span>
               </NavLink>
             ))}
+            <button
+              onClick={handleLogout}
+              className="mobile-subnav-item mobile-subnav-logout"
+              title="Logout of account"
+            >
+              <span className="mobile-subnav-icon">🚪</span>
+              <span className="mobile-subnav-text">Logout</span>
+            </button>
           </div>
 
           <PushNotificationBanner />
