@@ -107,7 +107,7 @@ const updateNGOProfile = async (req, res) => {
 const getNGODonations = async (req, res) => {
   try {
     const donations = await Donation.find({ acceptedBy: req.user._id })
-      .populate('donorId', 'name email phone address')
+      .populate('donorId', 'name email phone address locationCoordinates')
       .populate('volunteerId', 'name email phone')
       .sort({ updatedAt: -1 });
 

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { geocodeAddress } from '../../utils/distanceHelper';
 
 const CATEGORIES = ['Cooked Food', 'Raw Vegetables', 'Fruits', 'Packaged Food', 'Bakery', 'Dairy', 'Beverages', 'Other'];
 
@@ -53,8 +54,16 @@ const AddDonation = () => {
 
     setLoading(true);
     try {
+      let coords = null;
+      if (form.pickupAddress) {
+        coords = await geocodeAddress(form.pickupAddress);
+      }
+
       const data = new FormData();
       Object.entries(form).forEach(([k, v]) => data.append(k, v));
+      if (coords && coords.lat != null && coords.lng != null) {
+        data.append('pickupCoordinates', JSON.stringify(coords));
+      }
       if (imageFile) data.append('image', imageFile);
 
       await api.post('/donations', data, { headers: { 'Content-Type': 'multipart/form-data' } });

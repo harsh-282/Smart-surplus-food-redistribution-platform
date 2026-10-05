@@ -156,7 +156,7 @@ const seedData = async () => {
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
 
-  // 1. Fresh Food - Available (Expiry > 24h away)
+  // 1. Fresh Food - Available (Expiry > 24h away) - Anna Nagar (~12.5 km)
   await Donation.create({
     donorId: donor1._id,
     foodName: 'Rice and Sambar',
@@ -171,7 +171,7 @@ const seedData = async () => {
     status: 'Available',
   });
 
-  // 2. Expiring Soon Food - Available (Expiry in 5 hours) -> Highlighted in NGO view!
+  // 2. Expiring Soon Food - Available (Expiry in 5 hours) - Adyar (~4.8 km)
   await Donation.create({
     donorId: donor1._id,
     foodName: 'Idli and Chutney',
@@ -180,13 +180,13 @@ const seedData = async () => {
     image: { url: '/idli-chutney.jpg', publicId: 'local_idli_chutney' },
     preparationDate: new Date(now.getTime() - 2 * 60 * 60 * 1000),
     expiryDate: in5Hours,
-    pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
-    pickupCoordinates: { lat: 13.0878, lng: 80.2170 },
+    pickupAddress: '15, Adyar, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0012, lng: 80.2565 },
     description: 'Fresh breakfast idlis with coconut chutney. Best consumed within 5 hours.',
     status: 'Available',
   });
 
-  // 3. Expiring Soon Food - Available (Expiry in 12 hours)
+  // 3. Expiring Soon Food - Available (Expiry in 12 hours) - T. Nagar (~7.5 km)
   await Donation.create({
     donorId: donor2._id,
     foodName: 'Vegetable Biryani & Raita',
@@ -201,7 +201,7 @@ const seedData = async () => {
     status: 'Available',
   });
 
-  // 4. Expired Food - Available in records (Expiry 3 hours ago) -> Hidden from NGO available, visible to Donor/Admin
+  // 4. Expired Food - Available in records (Expiry 3 hours ago) - Guindy (~4.1 km)
   await Donation.create({
     donorId: donor1._id,
     foodName: 'Cut Fruit Platter',
@@ -210,13 +210,13 @@ const seedData = async () => {
     image: { url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food/fish-vegetables.jpg', publicId: 'sample_fruits' },
     preparationDate: yesterday,
     expiryDate: threeHoursAgo,
-    pickupAddress: '12, Anna Nagar, Chennai, Tamil Nadu',
-    pickupCoordinates: { lat: 13.0878, lng: 80.2170 },
+    pickupAddress: '88, Guindy Industrial Estate, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0067, lng: 80.2020 },
     description: 'Surplus morning fruit salads and slices.',
     status: 'Available',
   });
 
-  // 5. Accepted by NGO1 (Expiring Soon - needs urgent pickup)
+  // 5. Accepted by NGO1 (Expiring Soon - needs urgent pickup) - Mylapore (~8.3 km)
   await Donation.create({
     donorId: donor2._id,
     foodName: 'Wedding Meal Surplus',
@@ -225,14 +225,14 @@ const seedData = async () => {
     image: { url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food/fish-vegetables.jpg', publicId: 'sample3' },
     preparationDate: yesterday,
     expiryDate: in5Hours,
-    pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
-    pickupCoordinates: { lat: 13.0418, lng: 80.2341 },
+    pickupAddress: '34, Mylapore, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0339, lng: 80.2676 },
     description: 'Wedding ceremony surplus. Must be picked up promptly.',
     status: 'Accepted',
     acceptedBy: ngoUser1._id,
   });
 
-  // 6. Pickup Assigned (volunteer1) - Fresh
+  // 6. Pickup Assigned (volunteer1) - Fresh - Porur (~9.8 km)
   await Donation.create({
     donorId: donor2._id,
     foodName: 'Assorted Bakery Bread & Rolls',
@@ -241,15 +241,15 @@ const seedData = async () => {
     image: { url: '/bread-jam.jpg', publicId: 'local_bread_jam' },
     preparationDate: yesterday,
     expiryDate: threeDaysLater,
-    pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
-    pickupCoordinates: { lat: 13.0418, lng: 80.2341 },
+    pickupAddress: '10, Porur Main Road, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0382, lng: 80.1565 },
     description: 'Packaged whole wheat bread and bakery buns.',
     status: 'Pickup Assigned',
     acceptedBy: ngoUser2._id,
     volunteerId: volUser1._id,
   });
 
-  // 7. Completed - Delivered earlier
+  // 7. Completed - Delivered earlier - Nungambakkam (~9.3 km)
   const d7 = await Donation.create({
     donorId: donor2._id,
     foodName: 'Vegetables Mix',
@@ -258,8 +258,8 @@ const seedData = async () => {
     image: { url: 'https://res.cloudinary.com/demo/image/upload/v1/samples/food/fish-vegetables.jpg', publicId: 'sample6' },
     preparationDate: twoDaysAgo,
     expiryDate: yesterday,
-    pickupAddress: '45, T. Nagar, Chennai, Tamil Nadu',
-    pickupCoordinates: { lat: 13.0418, lng: 80.2341 },
+    pickupAddress: '55, Nungambakkam High Road, Chennai, Tamil Nadu',
+    pickupCoordinates: { lat: 13.0569, lng: 80.2425 },
     description: 'Fresh mixed vegetables - carrots, beans, and potatoes.',
     status: 'Completed',
     acceptedBy: ngoUser2._id,

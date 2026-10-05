@@ -99,7 +99,7 @@ const createDonation = async (req, res) => {
     await donation.save();
 
     const populated = await Donation.findById(donation._id)
-      .populate('donorId', 'name email phone address')
+      .populate('donorId', 'name email phone address locationCoordinates')
       .populate('statusHistory.updatedBy', 'name role email');
 
     // 1. Notify the donor of successful creation
@@ -201,7 +201,7 @@ const getDonations = async (req, res) => {
     }
 
     const donations = await Donation.find(filter)
-      .populate('donorId', 'name email phone address')
+      .populate('donorId', 'name email phone address locationCoordinates')
       .populate('acceptedBy', 'name email phone')
       .populate('volunteerId', 'name email phone')
       .sort({ expiryDate: 1, createdAt: -1 });
@@ -423,7 +423,7 @@ const acceptDonation = async (req, res) => {
     await donation.save();
 
     const populated = await Donation.findById(donation._id)
-      .populate('donorId', 'name email phone address')
+      .populate('donorId', 'name email phone address locationCoordinates')
       .populate('acceptedBy', 'name email phone')
       .populate('statusHistory.updatedBy', 'name role email');
 
@@ -491,7 +491,7 @@ const assignVolunteer = async (req, res) => {
     await donation.save();
 
     const populated = await Donation.findById(donation._id)
-      .populate('donorId', 'name email phone address')
+      .populate('donorId', 'name email phone address locationCoordinates')
       .populate('acceptedBy', 'name email phone')
       .populate('volunteerId', 'name email phone')
       .populate('statusHistory.updatedBy', 'name role email');
@@ -564,7 +564,7 @@ const updateStatus = async (req, res) => {
     await donation.save();
 
     const populated = await Donation.findById(donation._id)
-      .populate('donorId', 'name email phone address')
+      .populate('donorId', 'name email phone address locationCoordinates')
       .populate('acceptedBy', 'name email phone')
       .populate('volunteerId', 'name email phone')
       .populate('statusHistory.updatedBy', 'name role email');
