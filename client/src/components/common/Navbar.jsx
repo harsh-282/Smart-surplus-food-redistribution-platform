@@ -91,11 +91,12 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => setShowScanner(true)}
-                className="btn btn-secondary btn-sm"
+                className="btn btn-secondary btn-sm navbar-qr-btn"
                 style={{ gap: '0.3rem', padding: '0.35rem 0.6rem' }}
                 title="Scan FoodShare QR Code"
               >
-                📷 Scan QR
+                <span>📷</span>
+                <span className="qr-btn-text">Scan QR</span>
               </button>
               <NotificationBell />
               <div
