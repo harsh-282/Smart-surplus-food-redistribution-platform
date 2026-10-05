@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import DonationCard from '../../components/common/DonationCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -47,6 +48,7 @@ const SORT_OPTIONS = [
 ];
 
 const AvailableDonations = () => {
+  const { user } = useAuth();
   const [donations, setDonations] = useState([]);
   const [ngoProfile, setNgoProfile] = useState(null);
   const [ngoCoords, setNgoCoords] = useState(null);
@@ -72,22 +74,33 @@ const AvailableDonations = () => {
     async function loadNGOProfile() {
       try {
         const res = await api.get('/ngo/profile');
-        if (res.data?.ngo) {
-          setNgoProfile(res.data.ngo);
-          const coords = res.data.ngo.locationCoordinates || res.data.ngo.userId?.locationCoordinates;
+        const profileData = res.data?.profile || res.data?.ngo;
+        if (profileData) {
+          setNgoProfile(profileData);
+          const coords = profileData.locationCoordinates || profileData.userId?.locationCoordinates || user?.locationCoordinates;
+          const address = profileData.address || profileData.userId?.address || user?.address;
+
           if (coords?.lat != null && coords?.lng != null) {
             setNgoCoords(coords);
-          } else if (res.data.ngo.address) {
-            const geo = await geocodeAddress(res.data.ngo.address);
+          } else if (address) {
+            const geo = await geocodeAddress(address);
             if (geo) setNgoCoords(geo);
           }
+        } else if (user?.locationCoordinates?.lat != null) {
+          setNgoCoords(user.locationCoordinates);
+        } else if (user?.address) {
+          const geo = await geocodeAddress(user.address);
+          if (geo) setNgoCoords(geo);
         }
       } catch (err) {
         console.warn('NGO profile load failed:', err);
+        if (user?.locationCoordinates?.lat != null) {
+          setNgoCoords(user.locationCoordinates);
+        }
       }
     }
     loadNGOProfile();
-  }, []);
+  }, [user]);
 
   const fetchDonations = useCallback(async () => {
     setLoading(true);

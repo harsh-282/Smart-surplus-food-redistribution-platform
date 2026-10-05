@@ -4,13 +4,42 @@ const Donation = require('../models/Donation');
 // @desc    Get NGO profile
 // @route   GET /api/ngo/profile
 // @access  NGO
+// @desc    Get NGO profile
+// @route   GET /api/ngo/profile
+// @access  NGO
 const getNGOProfile = async (req, res) => {
   try {
-    const profile = await NGO.findOne({ userId: req.user._id }).populate('userId', 'name email phone');
+    let profile = await NGO.findOne({ userId: req.user._id }).populate(
+      'userId',
+      'name email phone address locationCoordinates'
+    );
+
     if (!profile) {
-      return res.status(404).json({ success: false, message: 'NGO profile not found.' });
+      // Auto-create basic profile if missing
+      profile = await NGO.create({
+        userId: req.user._id,
+        organizationName: req.user.name,
+        contactPerson: req.user.name,
+        phone: req.user.phone || '',
+        address: req.user.address || '',
+        locationCoordinates: req.user.locationCoordinates || null,
+      });
+      profile = await NGO.findById(profile._id).populate(
+        'userId',
+        'name email phone address locationCoordinates'
+      );
     }
-    res.status(200).json({ success: true, profile });
+
+    // Ensure locationCoordinates is populated from user if missing on profile
+    const profileObj = profile.toObject();
+    if (
+      (!profileObj.locationCoordinates || profileObj.locationCoordinates.lat == null) &&
+      req.user.locationCoordinates?.lat != null
+    ) {
+      profileObj.locationCoordinates = req.user.locationCoordinates;
+    }
+
+    res.status(200).json({ success: true, profile: profileObj, ngo: profileObj });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -21,24 +50,52 @@ const getNGOProfile = async (req, res) => {
 // @access  NGO
 const updateNGOProfile = async (req, res) => {
   try {
-    const { organizationName, contactPerson, phone, address, description, registrationNumber, servingCapacity, serviceArea, acceptedCategories } = req.body;
+    const {
+      organizationName,
+      contactPerson,
+      phone,
+      address,
+      description,
+      registrationNumber,
+      servingCapacity,
+      serviceArea,
+      acceptedCategories,
+      locationCoordinates,
+    } = req.body;
+
+    const updateFields = {
+      organizationName,
+      contactPerson,
+      phone,
+      address,
+      description,
+      registrationNumber,
+      servingCapacity: servingCapacity ? Number(servingCapacity) : 100,
+      serviceArea: serviceArea || '',
+      acceptedCategories: Array.isArray(acceptedCategories) ? acceptedCategories : ['All'],
+    };
+
+    if (locationCoordinates && locationCoordinates.lat != null) {
+      updateFields.locationCoordinates = locationCoordinates;
+      // Also update coordinates on core User model
+      const User = require('../models/User');
+      await User.findByIdAndUpdate(req.user._id, { locationCoordinates });
+    }
+
     const profile = await NGO.findOneAndUpdate(
       { userId: req.user._id },
-      {
-        organizationName,
-        contactPerson,
-        phone,
-        address,
-        description,
-        registrationNumber,
-        servingCapacity: servingCapacity ? Number(servingCapacity) : 100,
-        serviceArea: serviceArea || '',
-        acceptedCategories: Array.isArray(acceptedCategories) ? acceptedCategories : ['All'],
-      },
+      updateFields,
       { new: true, runValidators: true, upsert: true }
-    ).populate('userId', 'name email phone');
+    ).populate('userId', 'name email phone address locationCoordinates');
 
-    res.status(200).json({ success: true, message: 'Profile updated!', profile });
+    const profileObj = profile.toObject();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated!',
+      profile: profileObj,
+      ngo: profileObj,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

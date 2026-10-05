@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import NearbyDonationMap from '../../components/ngo/NearbyDonationMap';
 import DonationCard from '../../components/common/DonationCard';
@@ -45,6 +46,7 @@ const PRIORITY_FILTER_OPTIONS = [
 
 const NearbyDonationsPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [donations, setDonations] = useState([]);
   const [ngoProfile, setNgoProfile] = useState(null);
   const [ngoCoords, setNgoCoords] = useState(null);
@@ -66,22 +68,33 @@ const NearbyDonationsPage = () => {
     async function loadProfile() {
       try {
         const res = await api.get('/ngo/profile');
-        if (res.data?.ngo) {
-          setNgoProfile(res.data.ngo);
-          const coords = res.data.ngo.locationCoordinates || res.data.ngo.userId?.locationCoordinates;
+        const profileData = res.data?.profile || res.data?.ngo;
+        if (profileData) {
+          setNgoProfile(profileData);
+          const coords = profileData.locationCoordinates || profileData.userId?.locationCoordinates || user?.locationCoordinates;
+          const address = profileData.address || profileData.userId?.address || user?.address;
+
           if (coords?.lat != null && coords?.lng != null) {
             setNgoCoords(coords);
-          } else if (res.data.ngo.address) {
-            const geo = await geocodeAddress(res.data.ngo.address);
+          } else if (address) {
+            const geo = await geocodeAddress(address);
             if (geo) setNgoCoords(geo);
           }
+        } else if (user?.locationCoordinates?.lat != null) {
+          setNgoCoords(user.locationCoordinates);
+        } else if (user?.address) {
+          const geo = await geocodeAddress(user.address);
+          if (geo) setNgoCoords(geo);
         }
       } catch (err) {
         console.warn('Failed to load NGO Profile:', err);
+        if (user?.locationCoordinates?.lat != null) {
+          setNgoCoords(user.locationCoordinates);
+        }
       }
     }
     loadProfile();
-  }, []);
+  }, [user]);
 
   // Fetch and Process Available Donations
   const fetchDonations = useCallback(async () => {
