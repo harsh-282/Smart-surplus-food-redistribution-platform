@@ -6,8 +6,57 @@ import StatCard from '../../components/common/StatCard';
 import StatusBadge from '../../components/common/StatusBadge';
 import VerificationBadge from '../../components/common/VerificationBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import {
+  IconLeaf, IconCheckCircle, IconBike, IconBuilding,
+  IconAlertTriangle, IconClock, IconBan, IconMapPin
+} from '../../components/common/Icons';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
+
+const VerificationBanner = ({ status, rejectionReason, profileLink }) => {
+  if (status === 'Verified') return null;
+
+  const configs = {
+    Rejected: {
+      bg: 'rgba(220,38,38,0.08)', border: 'rgba(220,38,38,0.25)', color: '#dc2626',
+      Icon: IconAlertTriangle, title: 'Verification Not Approved',
+    },
+    Suspended: {
+      bg: 'rgba(107,114,128,0.08)', border: 'rgba(107,114,128,0.25)', color: '#6b7280',
+      Icon: IconBan, title: 'Account Suspended',
+    },
+    Pending: {
+      bg: 'rgba(234,88,12,0.08)', border: 'rgba(234,88,12,0.25)', color: '#ea580c',
+      Icon: IconClock, title: 'Pending Verification',
+    },
+  };
+  const cfg = configs[status] || configs.Pending;
+
+  return (
+    <div style={{
+      marginBottom: '1.5rem', padding: '1.25rem 1.5rem',
+      borderRadius: '12px', border: `1px solid ${cfg.border}`,
+      background: cfg.bg, color: cfg.color,
+    }}>
+      <div style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <cfg.Icon size={16} />
+        {cfg.title}
+      </div>
+      <p style={{ fontSize: '0.875rem', margin: 0, opacity: 0.85 }}>
+        {status === 'Rejected'
+          ? `Reason: "${rejectionReason || 'Profile information is incomplete.'}" Please update your profile and resubmit.`
+          : status === 'Suspended'
+          ? 'Your account is currently suspended. Contact admin for support.'
+          : 'Your account is awaiting administrator review. Claiming will be enabled once verified.'}
+      </p>
+      {status === 'Rejected' && (
+        <div style={{ marginTop: '0.875rem' }}>
+          <Link to={profileLink} className="btn btn-primary btn-sm">Update Profile &amp; Resubmit</Link>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const NGODashboard = () => {
   const { user } = useAuth();
@@ -26,108 +75,76 @@ const NGODashboard = () => {
   }, []);
 
   const stats = {
-    available: available.length,
-    accepted: accepted.filter(d => d.status === 'Accepted').length,
+    available:  available.length,
+    accepted:   accepted.filter(d => d.status === 'Accepted').length,
     inProgress: accepted.filter(d => ['Pickup Assigned', 'Picked Up', 'Delivered'].includes(d.status)).length,
-    completed: accepted.filter(d => d.status === 'Completed').length,
+    completed:  accepted.filter(d => d.status === 'Completed').length,
   };
 
   if (loading) return <LoadingSpinner />;
 
   return (
     <div>
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+      {/* Header */}
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 className="page-title">Welcome, {user?.name?.split(' ')[0]}! 🏢</h1>
+          <h1 className="page-title">Welcome, {user?.name?.split(' ')[0]}!</h1>
           <p className="page-subtitle">Manage your accepted food donations and track distribution.</p>
         </div>
-        <div>
-          <VerificationBadge status={user?.verificationStatus} role="ngo" size="md" />
-        </div>
+        <VerificationBadge status={user?.verificationStatus} role="ngo" size="md" />
       </div>
 
-      {user?.verificationStatus !== 'Verified' && (
-        <div
-          style={{
-            marginBottom: '1.5rem',
-            padding: '1.25rem',
-            borderRadius: '1rem',
-            border: '1px solid',
-            backgroundColor:
-              user?.verificationStatus === 'Rejected'
-                ? '#fef2f2'
-                : user?.verificationStatus === 'Suspended'
-                ? '#f3f4f6'
-                : '#fffbeb',
-            borderColor:
-              user?.verificationStatus === 'Rejected'
-                ? '#fca5a5'
-                : user?.verificationStatus === 'Suspended'
-                ? '#d1d5db'
-                : '#fde68a',
-            color:
-              user?.verificationStatus === 'Rejected'
-                ? '#991b1b'
-                : user?.verificationStatus === 'Suspended'
-                ? '#1f2937'
-                : '#92400e',
-          }}
-        >
-          <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {user?.verificationStatus === 'Rejected' ? '⚠️ NGO Verification Not Approved' : user?.verificationStatus === 'Suspended' ? '🚫 Account Suspended' : '⏳ NGO Account Pending Verification'}
-          </div>
-          <p style={{ fontSize: '0.875rem', margin: 0 }}>
-            {user?.verificationStatus === 'Rejected'
-              ? `Reason: "${user?.verificationRejectionReason || 'Profile information is incomplete.'}" Please update your NGO profile details and resubmit for review.`
-              : user?.verificationStatus === 'Suspended'
-              ? 'Your NGO account is currently suspended. You cannot claim new donations or perform receiving operations.'
-              : 'Your NGO account is awaiting administrator review. You can browse food donations, but food claiming will be enabled once your account is verified.'}
-          </p>
-          {user?.verificationStatus === 'Rejected' && (
-            <div style={{ marginTop: '0.75rem' }}>
-              <Link to="/ngo/profile" className="btn btn-primary btn-sm">
-                Update Profile & Resubmit
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
+      <VerificationBanner
+        status={user?.verificationStatus}
+        rejectionReason={user?.verificationRejectionReason}
+        profileLink="/ngo/profile"
+      />
 
+      {/* Stats */}
       <div className="grid-4" style={{ marginBottom: '2rem' }}>
-        <StatCard icon="🌿" value={stats.available}  label="Available to Accept" colorClass="green" />
-        <StatCard icon="✅" value={stats.accepted}   label="Accepted"             colorClass="blue" />
-        <StatCard icon="🚴" value={stats.inProgress} label="In Progress"          colorClass="orange" />
-        <StatCard icon="🎉" value={stats.completed}  label="Completed"            colorClass="teal" />
+        <StatCard icon={<IconLeaf size={20}/>}        value={stats.available}  label="Available to Accept" colorClass="green" />
+        <StatCard icon={<IconCheckCircle size={20}/>} value={stats.accepted}   label="Accepted"            colorClass="blue" />
+        <StatCard icon={<IconBike size={20}/>}        value={stats.inProgress} label="In Progress"         colorClass="orange" />
+        <StatCard icon={<IconBuilding size={20}/>}    value={stats.completed}  label="Completed"           colorClass="teal" />
       </div>
 
       {/* Quick Action Cards */}
       <div className="grid-2" style={{ marginBottom: '2rem' }}>
-        <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', borderColor: 'var(--green-border)', background: 'var(--green-glow)' }}>
           <div>
             <h3 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Browse Available Food</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{stats.available} active food items available to accept.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              {stats.available} active food items available to accept.
+            </p>
           </div>
-          <Link to="/ngo/available" className="btn btn-primary">🌿 View List</Link>
+          <Link to="/ngo/available" className="btn btn-primary" style={{ gap: '0.5rem' }}>
+            <IconLeaf size={15}/> View List
+          </Link>
         </div>
 
         <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h3 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>Interactive Nearby Map</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Visually discover surplus food locations around your NGO.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              Visually discover surplus food locations around your NGO.
+            </p>
           </div>
-          <Link to="/ngo/nearby-donations" className="btn btn-primary">🗺️ Open Map</Link>
+          <Link to="/ngo/nearby-donations" className="btn btn-secondary" style={{ gap: '0.5rem' }}>
+            <IconMapPin size={15}/> Open Map
+          </Link>
         </div>
       </div>
 
-      {/* Recent Accepted */}
+      {/* Recent Accepted Table */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
           <h2 style={{ fontWeight: 700, fontSize: '1.1rem' }}>Recently Accepted</h2>
           <Link to="/ngo/accepted" className="btn btn-secondary btn-sm">View All</Link>
         </div>
+
         {accepted.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">🏢</div>
+            <div className="empty-state-icon"><IconBuilding size={40}/></div>
             <div className="empty-state-title">No accepted donations yet</div>
             <div className="empty-state-desc">Browse available donations and accept ones you can distribute.</div>
             <Link to="/ngo/available" className="btn btn-primary">Browse Donations</Link>
@@ -135,15 +152,25 @@ const NGODashboard = () => {
         ) : (
           <div className="table-wrapper">
             <table>
-              <thead><tr><th>Food</th><th>Donor</th><th>Quantity</th><th>Expiry</th><th>Volunteer</th><th>Status</th><th>Action</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Food</th>
+                  <th>Donor</th>
+                  <th>Quantity</th>
+                  <th>Expiry</th>
+                  <th>Volunteer</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
               <tbody>
                 {accepted.slice(0, 5).map(d => (
                   <tr key={d._id}>
                     <td><strong>{d.foodName}</strong></td>
                     <td>{d.donorId?.name}</td>
                     <td>{d.quantity}</td>
-                    <td>{formatDate(d.expiryDate)}</td>
-                    <td>{d.volunteerId?.name || <span style={{ color: 'var(--text-muted)' }}>Not assigned</span>}</td>
+                    <td style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{formatDate(d.expiryDate)}</td>
+                    <td>{d.volunteerId?.name || <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Not assigned</span>}</td>
                     <td><StatusBadge status={d.status} /></td>
                     <td><Link to={`/ngo/donations/${d._id}`} className="btn btn-secondary btn-sm">View</Link></td>
                   </tr>

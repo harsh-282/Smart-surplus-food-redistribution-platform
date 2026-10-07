@@ -7,8 +7,42 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import AnalyticsKpiCards from '../../components/admin/AnalyticsKpiCards';
 import AnalyticsCharts from '../../components/admin/AnalyticsCharts';
 import AdminFeedbackStats from '../../components/admin/AdminFeedbackStats';
+import { IconShield, IconUsers, IconUtensils, IconList } from '../../components/common/Icons';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
+
+const quickLinks = [
+  {
+    to: '/admin/verification',
+    Icon: IconShield,
+    color: '#ef4444',
+    bg: 'rgba(239,68,68,0.08)',
+    title: 'NGO & Volunteer Verification',
+    desc: 'Approve, reject, or suspend NGO and volunteer accounts for ecosystem trust.',
+    cta: 'Verification Portal',
+    ctaClass: 'btn-primary',
+  },
+  {
+    to: '/admin/users',
+    Icon: IconUsers,
+    color: '#3b82f6',
+    bg: 'rgba(59,130,246,0.08)',
+    title: 'User Management',
+    desc: 'Review, verify, and deactivate/activate donor, NGO, and volunteer profiles.',
+    cta: 'Manage Users',
+    ctaClass: 'btn-secondary',
+  },
+  {
+    to: '/admin/donations',
+    Icon: IconUtensils,
+    color: 'var(--orange-400)',
+    bg: 'rgba(249,115,22,0.08)',
+    title: 'Donation Management',
+    desc: 'Review and moderate all food listings. Cancel inappropriate content.',
+    cta: 'Manage Food',
+    ctaClass: 'btn-secondary',
+  },
+];
 
 const AdminDashboard = () => {
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -33,60 +67,56 @@ const AdminDashboard = () => {
   return (
     <div className="admin-dashboard-wrapper">
       <div className="page-header">
-        <h1 className="page-title">Admin Dashboard & Ecosystem Analytics</h1>
+        <h1 className="page-title">Admin Dashboard &amp; Ecosystem Analytics</h1>
         <p className="page-subtitle">Real-time monitoring, ecosystem metrics, and donation workflow intelligence.</p>
       </div>
 
-      {/* 1. Analytics KPI Cards (10 Total Metrics) */}
-      {analyticsData?.kpis && (
-        <AnalyticsKpiCards kpis={analyticsData.kpis} />
-      )}
+      {/* Analytics KPI Cards */}
+      {analyticsData?.kpis && <AnalyticsKpiCards kpis={analyticsData.kpis} />}
 
-      {/* 2. Analytics Visualizations & Charts */}
+      {/* Charts */}
       {analyticsData?.charts && (
         <div style={{ marginBottom: '2.5rem' }}>
           <AnalyticsCharts charts={analyticsData.charts} />
         </div>
       )}
 
-
-      {/* Navigation Quicklinks */}
+      {/* Quick Navigation Cards */}
       <div className="grid-3" style={{ marginBottom: '2rem' }}>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justify: 'space-between', gap: '1rem' }}>
-          <div>
-            <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>🛡️ NGO & Volunteer Verification</h4>
-            <p className="text-muted text-sm">Approve, reject, or suspend NGO and volunteer accounts for ecosystem trust.</p>
+        {quickLinks.map((ql) => (
+          <div key={ql.to} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '10px',
+                background: ql.bg, color: ql.color,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <ql.Icon size={18} />
+              </div>
+              <h4 style={{ fontWeight: 700, fontSize: '0.9rem' }}>{ql.title}</h4>
+            </div>
+            <p className="text-muted text-sm">{ql.desc}</p>
+            <Link to={ql.to} className={`btn ${ql.ctaClass} btn-sm`} style={{ alignSelf: 'flex-start' }}>
+              {ql.cta}
+            </Link>
           </div>
-          <Link to="/admin/verification" className="btn btn-primary btn-sm" style={{ alignSelf: 'flex-start' }}>
-            Verification Portal
-          </Link>
-        </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justify: 'space-between', gap: '1rem' }}>
-          <div>
-            <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>👥 User Management</h4>
-            <p className="text-muted text-sm">Review, verify, and deactivate/activate donor, NGO, and volunteer profiles.</p>
-          </div>
-          <Link to="/admin/users" className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }}>Manage Users</Link>
-        </div>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justify: 'space-between', gap: '1rem' }}>
-          <div>
-            <h4 style={{ fontWeight: 700, marginBottom: '0.25rem' }}>🍽️ Donation Management</h4>
-            <p className="text-muted text-sm">Review and moderate all food listings. Cancel inappropriate content.</p>
-          </div>
-          <Link to="/admin/donations" className="btn btn-secondary btn-sm" style={{ alignSelf: 'flex-start' }}>Manage Food</Link>
-        </div>
+        ))}
       </div>
 
       {/* Recent Donations Table */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <h2 style={{ fontWeight: 700, fontSize: '1.1rem' }}>Recent Platform Activity</h2>
+          <h2 style={{ fontWeight: 700, fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <IconList size={18} style={{ color: 'var(--text-secondary)' }} />
+            Recent Platform Activity
+          </h2>
           <Link to="/admin/donations" className="btn btn-secondary btn-sm">View All Listings</Link>
         </div>
 
         {recentDonations.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">📋</div>
+            <div className="empty-state-icon"><IconList size={40}/></div>
             <div className="empty-state-title">No donations logged yet</div>
           </div>
         ) : (
@@ -98,7 +128,7 @@ const AdminDashboard = () => {
                   <th>Donor</th>
                   <th>NGO</th>
                   <th>Volunteer</th>
-                  <th>Expiry & Time Left</th>
+                  <th>Expiry &amp; Time Left</th>
                   <th>Workflow Status</th>
                   <th>Action</th>
                 </tr>
@@ -128,7 +158,7 @@ const AdminDashboard = () => {
         )}
       </div>
 
-      {/* 3. Ratings & Feedback Audit Section */}
+      {/* Feedback Stats */}
       <AdminFeedbackStats />
     </div>
   );

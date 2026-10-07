@@ -2,15 +2,24 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
+import { IconBell, IconLeaf, IconCheckCircle, IconBike, IconPackage, IconZap, IconClock, IconX } from './Icons';
+
+const NotifIconLeaf = () => <IconLeaf size={14} />;
+const NotifIconCheck = () => <IconCheckCircle size={14} />;
+const NotifIconBike = () => <IconBike size={14} />;
+const NotifIconPkg = () => <IconPackage size={14} />;
+const NotifIconZap = () => <IconZap size={14} />;
+const NotifIconClock = () => <IconClock size={14} />;
+const NotifIconBell = () => <IconBell size={14} />;
 
 const TYPE_CONFIG = {
-  DONATION_CREATED: { icon: '🌿', cls: 'notif-icon-created' },
-  DONATION_ACCEPTED: { icon: '🎉', cls: 'notif-icon-accepted' },
-  VOLUNTEER_ASSIGNED: { icon: '🚴', cls: 'notif-icon-assigned' },
-  STATUS_CHANGED: { icon: '📦', cls: 'notif-icon-status' },
-  EXPIRY_WARNING: { icon: '⚡', cls: 'notif-icon-warning' },
-  DONATION_EXPIRED: { icon: '⌛', cls: 'notif-icon-expired' },
-  GENERAL: { icon: '🔔', cls: 'notif-icon-general' },
+  DONATION_CREATED:   { IconComp: NotifIconLeaf,  cls: 'notif-icon-created' },
+  DONATION_ACCEPTED:  { IconComp: NotifIconCheck, cls: 'notif-icon-accepted' },
+  VOLUNTEER_ASSIGNED: { IconComp: NotifIconBike,  cls: 'notif-icon-assigned' },
+  STATUS_CHANGED:     { IconComp: NotifIconPkg,   cls: 'notif-icon-status' },
+  EXPIRY_WARNING:     { IconComp: NotifIconZap,   cls: 'notif-icon-warning' },
+  DONATION_EXPIRED:   { IconComp: NotifIconClock, cls: 'notif-icon-expired' },
+  GENERAL:            { IconComp: NotifIconBell,  cls: 'notif-icon-general' },
 };
 
 const formatTimeAgo = (dateString) => {
@@ -119,7 +128,7 @@ const NotificationBell = () => {
         aria-label={`Notifications (${unreadCount} unread)`}
         aria-expanded={isOpen}
       >
-        <span className="bell-icon">🔔</span>
+        <IconBell size={17} />
         {unreadCount > 0 && (
           <span className="notification-badge" id="notification-unread-count">
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -155,11 +164,11 @@ const NotificationBell = () => {
               <div className="web-push-banner-inner">
                 {pushPermission === 'denied' ? (
                   <div className="push-status-blocked">
-                    ⚠️ Browser notifications blocked. Enable in site settings.
+                    <IconZap size={13} style={{flexShrink:0}}/> Browser notifications blocked. Enable in site settings.
                   </div>
                 ) : isPushSubscribed ? (
                   <div className="push-status-active">
-                    <span className="push-active-indicator">🟢 Device Push Active</span>
+                    <span className="push-active-indicator"><IconCheckCircle size={13}/> Device Push Active</span>
                     <div className="push-active-actions">
                       <button
                         className="btn-push-action test"
@@ -167,7 +176,7 @@ const NotificationBell = () => {
                         disabled={pushLoading}
                         title="Trigger test push notification"
                       >
-                        {pushLoading ? 'Sending...' : '⚡ Test Push'}
+                        {pushLoading ? 'Sending...' : <><IconZap size={12}/> Test Push</>}
                       </button>
                       <button
                         className="btn-push-action disable"
@@ -190,7 +199,7 @@ const NotificationBell = () => {
                       onClick={enablePushNotifications}
                       disabled={pushLoading}
                     >
-                      {pushLoading ? 'Enabling...' : '🔔 Enable Push'}
+                      {pushLoading ? 'Enabling...' : <><IconBell size={13}/> Enable Push</>}
                     </button>
                   </div>
                 )}
@@ -224,13 +233,13 @@ const NotificationBell = () => {
           <div className="notification-list">
             {loading && notifications.length === 0 ? (
               <div className="notification-empty">
-                <span className="notification-empty-icon">⏳</span>
+                <span className="notification-empty-icon"><IconClock size={32}/></span>
                 <p>Loading notifications...</p>
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="notification-empty">
                 <span className="notification-empty-icon">
-                  {filter === 'unread' ? '✨' : '📭'}
+                  {filter === 'unread' ? <IconCheckCircle size={32}/> : <IconBell size={32}/>}
                 </span>
                 <p className="notification-empty-title">
                   {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
@@ -262,7 +271,7 @@ const NotificationBell = () => {
                   >
                     {/* Icon Badge */}
                     <div className={`notification-item-icon ${config.cls}`}>
-                      {config.icon}
+                      <config.IconComp />
                     </div>
 
                     {/* Content */}
@@ -293,7 +302,7 @@ const NotificationBell = () => {
                           title="Mark as read"
                           aria-label="Mark as read"
                         >
-                          ✓
+                          <IconCheckCircle size={13}/>
                         </button>
                       )}
                       <button
@@ -302,7 +311,7 @@ const NotificationBell = () => {
                         title="Delete notification"
                         aria-label="Delete notification"
                       >
-                        ✕
+                        <IconX size={12}/>
                       </button>
                     </div>
                   </div>

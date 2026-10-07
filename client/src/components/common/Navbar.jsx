@@ -4,31 +4,37 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import NotificationBell from './NotificationBell';
 import QRScannerModal from './QRScannerModal';
+import {
+  IconLeaf, IconLayoutDashboard, IconPlus, IconList, IconUser,
+  IconBuilding, IconMapPin, IconBike, IconShield, IconUsers, IconCrown,
+  IconSun, IconMoon, IconQrCode, IconX, IconMenu, IconHome, IconInfo,
+  IconLogOut, IconCheckCircle, IconUtensils
+} from './Icons';
 
 const ROLE_NAV_LINKS = {
   donor: [
-    { to: '/donor/dashboard', label: '📊 Dashboard' },
-    { to: '/donor/add-donation', label: '➕ Add Donation' },
-    { to: '/donor/my-donations', label: '📋 My Donations' },
-    { to: '/donor/profile', label: '👤 Profile' },
+    { to: '/donor/dashboard',    label: 'Dashboard',    Icon: IconLayoutDashboard },
+    { to: '/donor/add-donation', label: 'Add Donation', Icon: IconPlus },
+    { to: '/donor/my-donations', label: 'My Donations', Icon: IconList },
+    { to: '/donor/profile',      label: 'Profile',      Icon: IconUser },
   ],
   ngo: [
-    { to: '/ngo/dashboard', label: '📊 Dashboard' },
-    { to: '/ngo/available', label: '🌿 Available Donations' },
-    { to: '/ngo/nearby-donations', label: '🗺️ Nearby Donations' },
-    { to: '/ngo/accepted', label: '✅ Accepted Donations' },
-    { to: '/ngo/profile', label: '👤 Profile' },
+    { to: '/ngo/dashboard',        label: 'Dashboard',          Icon: IconLayoutDashboard },
+    { to: '/ngo/available',        label: 'Available Donations', Icon: IconLeaf },
+    { to: '/ngo/nearby-donations', label: 'Nearby Donations',   Icon: IconMapPin },
+    { to: '/ngo/accepted',         label: 'Accepted Donations', Icon: IconCheckCircle },
+    { to: '/ngo/profile',          label: 'Profile',            Icon: IconUser },
   ],
   volunteer: [
-    { to: '/volunteer/dashboard', label: '📊 Dashboard' },
-    { to: '/volunteer/deliveries', label: '🚴 My Deliveries' },
-    { to: '/volunteer/profile', label: '👤 Profile' },
+    { to: '/volunteer/dashboard',  label: 'Dashboard',   Icon: IconLayoutDashboard },
+    { to: '/volunteer/deliveries', label: 'My Deliveries', Icon: IconBike },
+    { to: '/volunteer/profile',    label: 'Profile',     Icon: IconUser },
   ],
   admin: [
-    { to: '/admin/dashboard', label: '📊 Dashboard' },
-    { to: '/admin/verification', label: '🛡️ Verification' },
-    { to: '/admin/users', label: '👥 Users' },
-    { to: '/admin/donations', label: '🍽️ Donations' },
+    { to: '/admin/dashboard',    label: 'Dashboard',   Icon: IconLayoutDashboard },
+    { to: '/admin/verification', label: 'Verification', Icon: IconShield },
+    { to: '/admin/users',        label: 'Users',        Icon: IconUsers },
+    { to: '/admin/donations',    label: 'Donations',    Icon: IconUtensils },
   ],
 };
 
@@ -63,15 +69,27 @@ const Navbar = () => {
       <div className="navbar-inner">
         {/* Logo */}
         <Link to="/" className="navbar-logo" onClick={closeMenu}>
-          🌿 Food<span>Share</span>
+          <span className="navbar-logo-icon">
+            <IconLeaf size={22} />
+          </span>
+          Food<span>Share</span>
         </Link>
 
         {/* Desktop Center Links */}
         <div className="navbar-links desktop-only">
-          <Link to="/" className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}>Home</Link>
-          <Link to="/about" className={`navbar-link ${location.pathname === '/about' ? 'active' : ''}`}>About</Link>
+          <Link to="/" className={`navbar-link ${location.pathname === '/' ? 'active' : ''}`}>
+            <IconHome size={15} />
+            Home
+          </Link>
+          <Link to="/about" className={`navbar-link ${location.pathname === '/about' ? 'active' : ''}`}>
+            <IconInfo size={15} />
+            About
+          </Link>
           {user && (
-            <Link to={getDashboardLink()} className={`navbar-link ${location.pathname.includes('/dashboard') ? 'active' : ''}`}>Dashboard</Link>
+            <Link to={getDashboardLink()} className={`navbar-link ${location.pathname.includes('/dashboard') ? 'active' : ''}`}>
+              <IconLayoutDashboard size={15} />
+              Dashboard
+            </Link>
           )}
         </div>
 
@@ -83,7 +101,7 @@ const Navbar = () => {
             title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
             aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
           >
-            {theme === 'light' ? '🌙' : '☀️'}
+            {theme === 'light' ? <IconMoon size={16} /> : <IconSun size={16} />}
           </button>
 
           {user ? (
@@ -92,10 +110,10 @@ const Navbar = () => {
                 type="button"
                 onClick={() => setShowScanner(true)}
                 className="btn btn-secondary btn-sm navbar-qr-btn"
-                style={{ gap: '0.3rem', padding: '0.35rem 0.6rem' }}
+                style={{ gap: '0.3rem', padding: '0.35rem 0.7rem' }}
                 title="Scan FoodShare QR Code"
               >
-                <span>📷</span>
+                <IconQrCode size={14} />
                 <span className="qr-btn-text">Scan QR</span>
               </button>
               <NotificationBell />
@@ -107,7 +125,8 @@ const Navbar = () => {
               >
                 {getInitials(user.name)}
               </div>
-              <button onClick={handleLogout} className="btn btn-secondary btn-sm desktop-only">
+              <button onClick={handleLogout} className="btn btn-secondary btn-sm desktop-only navbar-logout-btn">
+                <IconLogOut size={14} />
                 Logout
               </button>
             </>
@@ -125,7 +144,7 @@ const Navbar = () => {
             aria-label="Toggle mobile menu"
             aria-expanded={mobileOpen}
           >
-            {mobileOpen ? '✕' : '☰'}
+            {mobileOpen ? <IconX size={20} /> : <IconMenu size={20} />}
           </button>
         </div>
       </div>
@@ -146,36 +165,42 @@ const Navbar = () => {
                   </div>
                 </div>
               ) : (
-                <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>🌿 FoodShare</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }}>
+                  <IconLeaf size={20} style={{ color: 'var(--green-400)' }} />
+                  FoodShare
+                </div>
               )}
-              <button className="mobile-close-btn" onClick={closeMenu}>✕</button>
+              <button className="mobile-close-btn" onClick={closeMenu}><IconX size={18} /></button>
             </div>
 
             <div className="mobile-drawer-links">
               <Link to="/" className="mobile-nav-link" onClick={closeMenu}>
-                🏠 Home
+                <IconHome size={16} /> Home
               </Link>
               <Link to="/about" className="mobile-nav-link" onClick={closeMenu}>
-                ℹ️ About
+                <IconInfo size={16} /> About
               </Link>
 
               {user ? (
                 <>
                   <div className="mobile-section-title">Panel Navigation ({user.role})</div>
-                  {roleLinks.map((link) => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className={`mobile-nav-link ${location.pathname === link.to ? 'active' : ''}`}
-                      onClick={closeMenu}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
+                  {roleLinks.map((link) => {
+                    const Icon = link.Icon;
+                    return (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        className={`mobile-nav-link ${location.pathname === link.to ? 'active' : ''}`}
+                        onClick={closeMenu}
+                      >
+                        <Icon size={16} /> {link.label}
+                      </Link>
+                    );
+                  })}
 
                   <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
-                    <button onClick={handleLogout} className="btn btn-danger btn-block" style={{ minHeight: '44px' }}>
-                      🚪 Logout
+                    <button onClick={handleLogout} className="btn btn-danger btn-block" style={{ minHeight: '44px', gap: '0.5rem' }}>
+                      <IconLogOut size={16} /> Logout
                     </button>
                   </div>
                 </>

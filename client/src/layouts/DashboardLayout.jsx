@@ -3,38 +3,50 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
 import OfflineBanner from '../components/common/OfflineBanner';
 import PushNotificationBanner from '../components/common/PushNotificationBanner';
+import {
+  IconLayoutDashboard, IconPlus, IconList, IconUser,
+  IconLeaf, IconMapPin, IconCheckCircle, IconBike,
+  IconShield, IconUsers, IconUtensils, IconLogOut
+} from '../components/common/Icons';
 
 const SIDEBAR_CONFIG = {
   donor: [
-    { to: '/donor/dashboard',    icon: '📊', label: 'Dashboard' },
-    { to: '/donor/add-donation', icon: '➕', label: 'Add Donation' },
-    { to: '/donor/my-donations', icon: '📋', label: 'My Donations' },
-    { to: '/donor/profile',      icon: '👤', label: 'Profile' },
+    { to: '/donor/dashboard',    Icon: IconLayoutDashboard, label: 'Dashboard' },
+    { to: '/donor/add-donation', Icon: IconPlus,            label: 'Add Donation' },
+    { to: '/donor/my-donations', Icon: IconList,            label: 'My Donations' },
+    { to: '/donor/profile',      Icon: IconUser,            label: 'Profile' },
   ],
   ngo: [
-    { to: '/ngo/dashboard',  icon: '📊', label: 'Dashboard' },
-    { to: '/ngo/available',  icon: '🌿', label: 'Available Donations' },
-    { to: '/ngo/accepted',   icon: '✅', label: 'Accepted Donations' },
-    { to: '/ngo/profile',    icon: '👤', label: 'Profile' },
+    { to: '/ngo/dashboard',  Icon: IconLayoutDashboard, label: 'Dashboard' },
+    { to: '/ngo/available',  Icon: IconLeaf,            label: 'Available Donations' },
+    { to: '/ngo/accepted',   Icon: IconCheckCircle,     label: 'Accepted Donations' },
+    { to: '/ngo/profile',    Icon: IconUser,            label: 'Profile' },
   ],
   volunteer: [
-    { to: '/volunteer/dashboard',  icon: '📊', label: 'Dashboard' },
-    { to: '/volunteer/deliveries', icon: '🚴', label: 'My Deliveries' },
-    { to: '/volunteer/profile',    icon: '👤', label: 'Profile' },
+    { to: '/volunteer/dashboard',  Icon: IconLayoutDashboard, label: 'Dashboard' },
+    { to: '/volunteer/deliveries', Icon: IconBike,            label: 'My Deliveries' },
+    { to: '/volunteer/profile',    Icon: IconUser,            label: 'Profile' },
   ],
   admin: [
-    { to: '/admin/dashboard',    icon: '📊', label: 'Dashboard' },
-    { to: '/admin/verification', icon: '🛡️', label: 'Verification' },
-    { to: '/admin/users',        icon: '👥', label: 'Users' },
-    { to: '/admin/donations',    icon: '🍽️',  label: 'Donations' },
+    { to: '/admin/dashboard',    Icon: IconLayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/verification', Icon: IconShield,          label: 'Verification' },
+    { to: '/admin/users',        Icon: IconUsers,           label: 'Users' },
+    { to: '/admin/donations',    Icon: IconUtensils,        label: 'Donations' },
   ],
 };
 
 const ROLE_LABEL = {
-  donor: 'Donor Panel',
-  ngo: 'NGO Panel',
+  donor:     'Donor Panel',
+  ngo:       'NGO Panel',
   volunteer: 'Volunteer Panel',
-  admin: 'Admin Panel',
+  admin:     'Admin Panel',
+};
+
+const ROLE_COLOR = {
+  donor:     'var(--orange-400)',
+  ngo:       '#3b82f6',
+  volunteer: '#a855f7',
+  admin:     '#ef4444',
 };
 
 const DashboardLayout = ({ role }) => {
@@ -62,7 +74,7 @@ const DashboardLayout = ({ role }) => {
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: '0.875rem' }}>{user?.name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
+                <div style={{ fontSize: '0.7rem', color: ROLE_COLOR[role], textTransform: 'capitalize', fontWeight: 600, marginTop: '0.1rem' }}>
                   {user?.role}
                 </div>
               </div>
@@ -74,13 +86,13 @@ const DashboardLayout = ({ role }) => {
 
           {/* Nav Links */}
           <nav className="sidebar-nav">
-            {links.map(({ to, icon, label }) => (
+            {links.map(({ to, Icon, label }) => (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
               >
-                <span className="sidebar-icon">{icon}</span>
+                <span className="sidebar-icon"><Icon size={16} /></span>
                 {label}
               </NavLink>
             ))}
@@ -88,8 +100,8 @@ const DashboardLayout = ({ role }) => {
 
           {/* Logout at bottom */}
           <div style={{ padding: '1.5rem 0.75rem 0', marginTop: 'auto' }}>
-            <button onClick={handleLogout} className="btn btn-danger btn-sm btn-block">
-              🚪 Logout
+            <button onClick={handleLogout} className="btn btn-danger btn-sm btn-block" style={{ gap: '0.5rem' }}>
+              <IconLogOut size={14} /> Logout
             </button>
           </div>
         </aside>
@@ -98,13 +110,13 @@ const DashboardLayout = ({ role }) => {
         <main className="dashboard-main">
           {/* Mobile Horizontal Tab Navigation */}
           <div className="mobile-subnav-bar">
-            {links.map(({ to, icon, label }) => (
+            {links.map(({ to, Icon, label }) => (
               <NavLink
                 key={to}
                 to={to}
                 className={({ isActive }) => `mobile-subnav-item${isActive ? ' active' : ''}`}
               >
-                <span className="mobile-subnav-icon">{icon}</span>
+                <span className="mobile-subnav-icon"><Icon size={16} /></span>
                 <span className="mobile-subnav-text">{label}</span>
               </NavLink>
             ))}
@@ -113,7 +125,7 @@ const DashboardLayout = ({ role }) => {
               className="mobile-subnav-item mobile-subnav-logout"
               title="Logout of account"
             >
-              <span className="mobile-subnav-icon">🚪</span>
+              <span className="mobile-subnav-icon"><IconLogOut size={16} /></span>
               <span className="mobile-subnav-text">Logout</span>
             </button>
           </div>
@@ -127,4 +139,3 @@ const DashboardLayout = ({ role }) => {
 };
 
 export default DashboardLayout;
-
