@@ -4,6 +4,7 @@ import PriorityBadge from './PriorityBadge';
 import { getExpiryInfo } from '../../utils/expiryHelper';
 import { calculateDonationPriority } from '../../utils/donationPriorityHelper';
 import { Link } from 'react-router-dom';
+import use3DTilt from '../../utils/use3DTilt';
 
 const CATEGORY_EMOJI = {
   'Cooked Food': '🍛',
@@ -25,7 +26,7 @@ const formatDate = (dateStr) => {
 
 const DonationCard = ({ donation, detailLink, actionButton, showPriority = false, ngoCoords = null, ngoProfile = null, priority = null }) => {
   const emoji = CATEGORY_EMOJI[donation.category] || '🍽️';
-  const expiryInfo = getExpiryInfo(donation.expiryDate);
+  const expiryInfo = getExpiryInfo(donation.expiryDate, donation.status);
 
   const priorityObj = showPriority || priority
     ? (priority || calculateDonationPriority(donation, ngoCoords, ngoProfile))
@@ -38,8 +39,10 @@ const DonationCard = ({ donation, detailLink, actionButton, showPriority = false
     cardClasses += ' donation-card-expired';
   }
 
+  const cardTiltRef = use3DTilt({ maxTilt: 3.5, scale: 1.012 });
+
   return (
-    <div className={cardClasses}>
+    <div ref={cardTiltRef} className={cardClasses}>
       {/* Smart Priority Card Header Bar */}
       {priorityObj && !priorityObj.isExpired && (
         <div className="donation-card-priority-header">
@@ -84,10 +87,12 @@ const DonationCard = ({ donation, detailLink, actionButton, showPriority = false
           <span>📂 {donation.category}</span>
           <span>⚖️ {donation.quantity}</span>
           <span>📍 {donation.pickupAddress?.slice(0, 50)}{donation.pickupAddress?.length > 50 ? '...' : ''}</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', margin: '0.2rem 0' }}>
-            <span>⏰ Expiry:</span>
-            <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} />
-          </div>
+          {donation.status !== 'Completed' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', margin: '0.2rem 0' }}>
+              <span>⏰ Expiry:</span>
+              <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} status={donation.status} />
+            </div>
+          )}
           {donation.donorId?.name && <span>👤 By: {donation.donorId.name}</span>}
         </div>
       </div>

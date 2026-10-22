@@ -147,15 +147,26 @@ const NotificationBell = () => {
                 <span className="notification-unread-pill">{unreadCount} new</span>
               )}
             </div>
-            {unreadCount > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {unreadCount > 0 && (
+                <button
+                  className="notification-mark-all-btn"
+                  onClick={markAllAsRead}
+                  title="Mark all as read"
+                >
+                  ✓ Mark read
+                </button>
+              )}
               <button
-                className="notification-mark-all-btn"
-                onClick={markAllAsRead}
-                title="Mark all as read"
+                className="mobile-close-btn"
+                onClick={() => setIsOpen(false)}
+                title="Close notifications"
+                style={{ width: 28, height: 28, padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                aria-label="Close notifications"
               >
-                ✓ Mark all read
+                <IconX size={14} />
               </button>
-            )}
+            </div>
           </div>
 
           {/* Web Push Permission / Subscription Banner */}

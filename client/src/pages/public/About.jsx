@@ -1,3 +1,4 @@
+import TiltCard from '../../components/common/TiltCard';
 import {
   IconLeaf, IconHandshake, IconBarChart, IconLock, IconUtensils,
   IconBuilding, IconBike, IconCrown, IconCode, IconCloud, IconDatabase,
@@ -27,7 +28,7 @@ const About = () => (
     <section className="section">
       <div className="container">
         <div className="grid-2" style={{ alignItems: 'center', gap: '4rem' }}>
-          <div>
+          <div className="reveal-fade-up">
             <div className="hero-badge" style={{ display: 'inline-flex', marginBottom: '1rem' }}>
               <IconSprout size={14} />
               Our Mission
@@ -54,7 +55,7 @@ const About = () => (
               { Icon: IconBarChart,   title: 'Track Impact',    desc: 'Monitor every donation end-to-end',                    color: '#a855f7',           bg: 'rgba(168,85,247,0.1)' },
               { Icon: IconLock,       title: 'Ensure Safety',   desc: 'Only verified users participate in redistribution',    color: '#f97316',           bg: 'rgba(249,115,22,0.1)' },
             ].map((item, i) => (
-              <div key={i} className="card about-feature-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem' }}>
+              <TiltCard key={i} maxTilt={3} className={`card about-feature-card reveal-fade-up stagger-${i + 1}`} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem 1.25rem' }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: '10px', display: 'flex',
                   alignItems: 'center', justifyContent: 'center',
@@ -66,7 +67,7 @@ const About = () => (
                   <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{item.title}</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{item.desc}</div>
                 </div>
-              </div>
+              </TiltCard>
             ))}
           </div>
         </div>
@@ -76,7 +77,7 @@ const About = () => (
     {/* The 4 Roles */}
     <section className="section" style={{ background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-color)' }}>
       <div className="container">
-        <div className="text-center" style={{ marginBottom: '3rem' }}>
+        <div className="text-center reveal-fade-up" style={{ marginBottom: '3rem' }}>
           <h2 className="section-title">Four Roles, One Goal</h2>
           <p className="section-subtitle" style={{ margin: '0 auto' }}>Everyone has a part to play in ending food waste.</p>
         </div>
@@ -87,7 +88,7 @@ const About = () => (
             { Icon: IconBike,     role: 'Volunteer',  color: '#a855f7',           bg: 'rgba(168,85,247,0.08)', desc: 'Individuals who handle pickup and delivery between donors and NGOs.' },
             { Icon: IconCrown,    role: 'Admin',      color: '#ef4444',           bg: 'rgba(239,68,68,0.08)',  desc: 'Platform administrators who monitor all activity and ensure smooth operations.' },
           ].map((r, i) => (
-            <div key={i} className="card" style={{ textAlign: 'center' }}>
+            <TiltCard key={i} maxTilt={4.5} className={`card reveal-fade-up stagger-${i + 1}`} style={{ textAlign: 'center' }}>
               <div style={{
                 width: 64, height: 64, borderRadius: '16px', display: 'flex',
                 alignItems: 'center', justifyContent: 'center',
@@ -97,7 +98,7 @@ const About = () => (
               </div>
               <h3 style={{ fontWeight: 700, fontSize: '1.1rem', color: r.color, marginBottom: '0.5rem' }}>{r.role}</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{r.desc}</p>
-            </div>
+            </TiltCard>
           ))}
         </div>
       </div>

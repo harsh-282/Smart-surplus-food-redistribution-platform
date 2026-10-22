@@ -19,23 +19,33 @@ const EXPIRY_CONFIG = {
   },
 };
 
-const ExpiryBadge = ({ expiryDate, showTime = false, className = '' }) => {
-  const [info, setInfo] = useState(() => getExpiryInfo(expiryDate));
+const ExpiryBadge = ({ expiryDate, showTime = false, className = '', status = '', donation = null }) => {
+  const effectiveStatus = status || donation?.status || '';
+
+  // Once donation is completed (or finished), do not tag it as expired
+  if (['Completed', 'Delivered'].includes(effectiveStatus)) {
+    return null;
+  }
+
+  const [info, setInfo] = useState(() => getExpiryInfo(expiryDate, new Date(), effectiveStatus));
 
   useEffect(() => {
-    setInfo(getExpiryInfo(expiryDate));
+    setInfo(getExpiryInfo(expiryDate, new Date(), effectiveStatus));
 
     // Update countdown every 60 seconds
     const timer = setInterval(() => {
-      setInfo(getExpiryInfo(expiryDate));
+      setInfo(getExpiryInfo(expiryDate, new Date(), effectiveStatus));
     }, 60000);
 
     return () => clearInterval(timer);
-  }, [expiryDate]);
+  }, [expiryDate, effectiveStatus]);
 
-  if (!expiryDate) return null;
+  if (!expiryDate || ['Completed', 'Delivered'].includes(effectiveStatus) || info.status === 'Completed') {
+    return null;
+  }
 
-  const config = EXPIRY_CONFIG[info.status] || EXPIRY_CONFIG['Expired'];
+  const config = EXPIRY_CONFIG[info.status];
+  if (!config) return null;
 
   return (
     <span className={`badge ${config.cls} ${className}`}>

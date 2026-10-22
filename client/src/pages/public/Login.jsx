@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Logo from '../../components/common/Logo';
 import { IconLeaf, IconAlertTriangle, IconMail, IconLock, IconCrown, IconUtensils, IconBuilding, IconBike } from '../../components/common/Icons';
 
 const Login = () => {
@@ -41,7 +42,7 @@ const Login = () => {
       <div className="auth-card">
         <div className="auth-logo">
           <div className="auth-logo-icon">
-            <IconLeaf size={28} />
+            <Logo size={68} />
           </div>
         </div>
         <h1 className="auth-title">Welcome Back</h1>

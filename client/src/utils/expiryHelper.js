@@ -8,10 +8,43 @@
  * @param {Date} [now=new Date()]
  * @returns {'Fresh' | 'Expiring Soon' | 'Expired'}
  */
-export const getExpiryStatus = (expiryDate, now = new Date()) => {
+function resolveNowAndStatus(nowArg, statusArg) {
+  let now = new Date();
+  let status = '';
+
+  if (typeof nowArg === 'string' && !statusArg) {
+    if (['Completed', 'Delivered', 'Available', 'Accepted', 'Pickup Assigned', 'Picked Up', 'Cancelled', 'Pending'].includes(nowArg) || isNaN(Date.parse(nowArg))) {
+      status = nowArg;
+    } else {
+      now = new Date(nowArg);
+    }
+  } else {
+    if (nowArg instanceof Date) {
+      now = nowArg;
+    } else if (nowArg && !isNaN(new Date(nowArg).getTime())) {
+      now = new Date(nowArg);
+    }
+    status = statusArg || '';
+  }
+
+  return { now, status };
+}
+
+/**
+ * Calculates derived expiry status based on current date/time and expiryDate
+ * @param {Date|string} expiryDate 
+ * @param {Date|string} [now=new Date()]
+ * @param {string} [status='']
+ * @returns {'Fresh' | 'Expiring Soon' | 'Expired' | 'Completed'}
+ */
+export const getExpiryStatus = (expiryDate, now = new Date(), status = '') => {
+  const resolved = resolveNowAndStatus(now, status);
+  if (['Completed', 'Delivered'].includes(resolved.status)) {
+    return 'Completed';
+  }
   if (!expiryDate) return 'Expired';
   const expTime = new Date(expiryDate).getTime();
-  const currentTime = now.getTime();
+  const currentTime = resolved.now.getTime();
   const diffMs = expTime - currentTime;
 
   if (diffMs <= 0) {
@@ -30,13 +63,18 @@ export const getExpiryStatus = (expiryDate, now = new Date()) => {
 /**
  * Formats time remaining or elapsed time since expiry in a clean, human-readable format
  * @param {Date|string} expiryDate 
- * @param {Date} [now=new Date()]
+ * @param {Date|string} [now=new Date()]
+ * @param {string} [status='']
  * @returns {string}
  */
-export const getTimeRemaining = (expiryDate, now = new Date()) => {
+export const getTimeRemaining = (expiryDate, now = new Date(), status = '') => {
+  const resolved = resolveNowAndStatus(now, status);
+  if (['Completed', 'Delivered'].includes(resolved.status)) {
+    return 'Completed';
+  }
   if (!expiryDate) return 'N/A';
   const expTime = new Date(expiryDate).getTime();
-  const currentTime = now.getTime();
+  const currentTime = resolved.now.getTime();
   const diffMs = expTime - currentTime;
 
   if (diffMs <= 0) {
@@ -84,17 +122,29 @@ export const getTimeRemaining = (expiryDate, now = new Date()) => {
 /**
  * Returns complete expiry metadata object for convenience
  * @param {Date|string} expiryDate 
- * @param {Date} [now=new Date()]
+ * @param {Date|string} [now=new Date()]
+ * @param {string} [status='']
  */
-export const getExpiryInfo = (expiryDate, now = new Date()) => {
-  const status = getExpiryStatus(expiryDate, now);
-  const timeLeft = getTimeRemaining(expiryDate, now);
+export const getExpiryInfo = (expiryDate, now = new Date(), status = '') => {
+  const resolved = resolveNowAndStatus(now, status);
+  if (['Completed', 'Delivered'].includes(resolved.status)) {
+    return {
+      status: 'Completed',
+      timeLeft: 'Completed',
+      isFresh: false,
+      isExpiringSoon: false,
+      isExpired: false,
+    };
+  }
+
+  const expiryStatus = getExpiryStatus(expiryDate, resolved.now, resolved.status);
+  const timeLeft = getTimeRemaining(expiryDate, resolved.now, resolved.status);
 
   return {
-    status,
+    status: expiryStatus,
     timeLeft,
-    isFresh: status === 'Fresh',
-    isExpiringSoon: status === 'Expiring Soon',
-    isExpired: status === 'Expired',
+    isFresh: expiryStatus === 'Fresh',
+    isExpiringSoon: expiryStatus === 'Expiring Soon',
+    isExpired: expiryStatus === 'Expired',
   };
 };

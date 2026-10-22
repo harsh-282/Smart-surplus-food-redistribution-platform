@@ -72,7 +72,11 @@ const AdminDashboard = () => {
       </div>
 
       {/* Analytics KPI Cards */}
-      {analyticsData?.kpis && <AnalyticsKpiCards kpis={analyticsData.kpis} />}
+      {analyticsData?.kpis && (
+        <div>
+          <AnalyticsKpiCards kpis={analyticsData.kpis} />
+        </div>
+      )}
 
       {/* Charts */}
       {analyticsData?.charts && (
@@ -84,7 +88,7 @@ const AdminDashboard = () => {
       {/* Quick Navigation Cards */}
       <div className="grid-3" style={{ marginBottom: '2rem' }}>
         {quickLinks.map((ql) => (
-          <div key={ql.to} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div key={ql.to} className="card card-hover" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <div style={{
                 width: 40, height: 40, borderRadius: '10px',
@@ -143,7 +147,7 @@ const AdminDashboard = () => {
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formatDate(d.expiryDate)}</span>
-                        <ExpiryBadge expiryDate={d.expiryDate} showTime={true} />
+                        <ExpiryBadge expiryDate={d.expiryDate} showTime={true} status={d.status} />
                       </div>
                     </td>
                     <td><StatusBadge status={d.status} /></td>

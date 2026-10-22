@@ -44,7 +44,7 @@ const DonationDetails = () => {
   if (loading) return <LoadingSpinner />;
   if (!donation) return <div className="empty-state"><div className="empty-state-icon">❌</div><div className="empty-state-title">Donation not found</div><Link to="/donor/my-donations" className="btn btn-secondary">Back</Link></div>;
 
-  const expiryInfo = getExpiryInfo(donation.expiryDate);
+  const expiryInfo = getExpiryInfo(donation.expiryDate, donation.status);
 
   return (
     <div>
@@ -89,17 +89,26 @@ const DonationDetails = () => {
         <div>
           <div className="detail-header">
             {donation.image?.url ? (
-              <img src={donation.image.url} alt={donation.foodName} className="detail-img" />
-            ) : (
-              <div className="detail-img-placeholder">🍽️</div>
-            )}
+              <img
+                src={donation.image.url}
+                alt={donation.foodName}
+                className="detail-img"
+                onError={(e) => { e.target.style.display = 'none'; const sib = e.target.nextElementSibling; if (sib) sib.style.display = 'flex'; }}
+              />
+            ) : null}
+            <div
+              className="detail-img-placeholder"
+              style={{ display: donation.image?.url ? 'none' : 'flex' }}
+            >
+              🍽️
+            </div>
             <div className="detail-body">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{donation.foodName}</h1>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <QRDonationBadge donation={donation} />
                   <StatusBadge status={donation.status} />
-                  <ExpiryBadge expiryDate={donation.expiryDate} />
+                  <ExpiryBadge expiryDate={donation.expiryDate} status={donation.status} />
                 </div>
               </div>
 
@@ -108,12 +117,14 @@ const DonationDetails = () => {
                 <div className="detail-field"><label>Quantity</label><p>⚖️ {donation.quantity}</p></div>
                 <div className="detail-field"><label>Prepared At</label><p>{formatDateTime(donation.preparationDate)}</p></div>
                 <div className="detail-field"><label>Expiry Time</label><p>{formatDateTime(donation.expiryDate)}</p></div>
-                <div className="detail-field" style={{ gridColumn: '1/-1' }}>
-                  <label>Expiry Countdown & Status</label>
-                  <div style={{ marginTop: '0.25rem' }}>
-                    <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} />
+                {donation.status !== 'Completed' && (
+                  <div className="detail-field" style={{ gridColumn: '1/-1' }}>
+                    <label>Expiry Countdown & Status</label>
+                    <div style={{ marginTop: '0.25rem' }}>
+                      <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} status={donation.status} />
+                    </div>
                   </div>
-                </div>
+                )}
                 <div className="detail-field" style={{ gridColumn: '1/-1' }}><label>Pickup Address</label><p>📍 {donation.pickupAddress}</p></div>
                 {donation.description && <div className="detail-field" style={{ gridColumn: '1/-1' }}><label>Description</label><p>{donation.description}</p></div>}
                 {donation.acceptedBy && <div className="detail-field"><label>Accepted By</label><p>🏢 {donation.acceptedBy.name}</p></div>}

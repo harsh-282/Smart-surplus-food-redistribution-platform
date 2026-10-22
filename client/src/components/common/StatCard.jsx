@@ -1,5 +1,10 @@
-const StatCard = ({ icon, value, label, colorClass = 'green', trend }) => (
-  <div className="stat-card">
+import use3DTilt from '../../utils/use3DTilt';
+
+const StatCard = ({ icon, value, label, colorClass = 'green', trend }) => {
+  const tiltRef = use3DTilt({ maxTilt: 3, scale: 1.015 });
+
+  return (
+    <div ref={tiltRef} className="stat-card">
     <div className={`stat-icon ${colorClass}`}>
       {typeof icon === 'string' ? (
         <span style={{ fontSize: '1.4rem' }}>{icon}</span>
@@ -23,6 +28,7 @@ const StatCard = ({ icon, value, label, colorClass = 'green', trend }) => (
       )}
     </div>
   </div>
-);
+  );
+};
 
 export default StatCard;

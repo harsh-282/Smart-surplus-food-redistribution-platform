@@ -105,10 +105,13 @@ const getAllDonations = async (req, res) => {
       const next24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
       if (expiryStatus === 'Fresh') {
         filter.expiryDate = { $gt: next24h };
+        if (!status) filter.status = { $nin: ['Completed', 'Delivered'] };
       } else if (expiryStatus === 'Expiring Soon') {
         filter.expiryDate = { $gt: now, $lte: next24h };
+        if (!status) filter.status = { $nin: ['Completed', 'Delivered'] };
       } else if (expiryStatus === 'Expired') {
         filter.expiryDate = { $lte: now };
+        if (!status) filter.status = { $nin: ['Completed', 'Delivered'] };
       }
     }
 

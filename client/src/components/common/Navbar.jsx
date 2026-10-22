@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import NotificationBell from './NotificationBell';
 import QRScannerModal from './QRScannerModal';
+import Logo from './Logo';
 import {
   IconLeaf, IconLayoutDashboard, IconPlus, IconList, IconUser,
   IconBuilding, IconMapPin, IconBike, IconShield, IconUsers, IconCrown,
@@ -46,6 +48,23 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
+  // Lock body scroll and listen for Escape key when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') setMobileOpen(false);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [mobileOpen]);
+
   const handleLogout = () => {
     setMobileOpen(false);
     logout();
@@ -70,9 +89,9 @@ const Navbar = () => {
         {/* Logo */}
         <Link to="/" className="navbar-logo" onClick={closeMenu}>
           <span className="navbar-logo-icon">
-            <IconLeaf size={22} />
+            <Logo size={36} />
           </span>
-          Food<span>Share</span>
+          <span className="navbar-logo-text">Food<span>Share</span></span>
         </Link>
 
         {/* Desktop Center Links */}
@@ -118,7 +137,7 @@ const Navbar = () => {
               </button>
               <NotificationBell />
               <div
-                className="user-avatar"
+                className="user-avatar desktop-only"
                 onClick={() => setMobileOpen(!mobileOpen)}
                 style={{ cursor: 'pointer' }}
                 title={`${user.name} (${user.role})`}
@@ -149,9 +168,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
-      {mobileOpen && (
-        <div className="mobile-drawer-overlay" onClick={closeMenu}>
+      {/* Mobile Drawer Menu - Portal to document.body */}
+      {mobileOpen && typeof document !== 'undefined' && createPortal(
+        <div className="mobile-drawer-overlay" onClick={closeMenu} role="dialog" aria-modal="true" aria-label="Mobile navigation">
           <div className="mobile-drawer-content" onClick={(e) => e.stopPropagation()}>
             <div className="mobile-drawer-header">
               {user ? (
@@ -166,11 +185,11 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }}>
-                  <IconLeaf size={20} style={{ color: 'var(--green-400)' }} />
+                  <Logo size={28} />
                   FoodShare
                 </div>
               )}
-              <button className="mobile-close-btn" onClick={closeMenu}><IconX size={18} /></button>
+              <button className="mobile-close-btn" onClick={closeMenu} aria-label="Close menu"><IconX size={18} /></button>
             </div>
 
             <div className="mobile-drawer-links">
@@ -216,7 +235,8 @@ const Navbar = () => {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       {/* Global QR Camera Scanner Modal */}
       <QRScannerModal

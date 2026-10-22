@@ -152,7 +152,7 @@ const GoogleMapView = ({
           background: trackingActive && !isStale ? 'rgba(22, 163, 74, 0.1)' : 'var(--bg-secondary, #f1f5f9)',
           borderBottom: '1px solid var(--border-color, #cbd5e1)',
           display: 'flex',
-          justify: 'space-between',
+          justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '0.5rem',

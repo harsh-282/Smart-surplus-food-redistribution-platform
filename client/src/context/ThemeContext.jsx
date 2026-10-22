@@ -4,9 +4,9 @@ const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    // Default theme is 'dark' as requested
+    // Default theme is 'light' (Grass Green + Deep Forest Green system)
     const savedTheme = localStorage.getItem('foodshare_theme');
-    return savedTheme === 'light' ? 'light' : 'dark';
+    return savedTheme === 'dark' ? 'dark' : 'light';
   });
 
   useEffect(() => {

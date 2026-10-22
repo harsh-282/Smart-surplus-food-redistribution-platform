@@ -104,7 +104,7 @@ const NGODonationDetails = () => {
     );
   }
 
-  const expiryInfo = getExpiryInfo(donation.expiryDate);
+  const expiryInfo = getExpiryInfo(donation.expiryDate, donation.status);
 
   return (
     <div>
@@ -160,18 +160,27 @@ const NGODonationDetails = () => {
         {/* Info Card */}
         <div className="detail-header">
           {donation.image?.url ? (
-            <img src={donation.image.url} alt={donation.foodName} className="detail-img" />
-          ) : (
-            <div className="detail-img-placeholder">🍲</div>
-          )}
+            <img
+              src={donation.image.url}
+              alt={donation.foodName}
+              className="detail-img"
+              onError={(e) => { e.target.style.display = 'none'; const sib = e.target.nextElementSibling; if (sib) sib.style.display = 'flex'; }}
+            />
+          ) : null}
+          <div
+            className="detail-img-placeholder"
+            style={{ display: donation.image?.url ? 'none' : 'flex' }}
+          >
+            🍲
+          </div>
           <div className="detail-body">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>Donation Information</h2>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700 }}>{donation.foodName || 'Donation Information'}</h2>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <QRDonationBadge donation={donation} />
                 <StatusBadge status={donation.status} />
                 <PriorityBadge donation={donation} ngoCoords={ngoCoords} ngoProfile={ngoProfile} />
-                <ExpiryBadge expiryDate={donation.expiryDate} />
+                <ExpiryBadge expiryDate={donation.expiryDate} status={donation.status} />
               </div>
             </div>
 
@@ -180,12 +189,14 @@ const NGODonationDetails = () => {
               <div className="detail-field"><label>Quantity</label><p>⚖️ {donation.quantity}</p></div>
               <div className="detail-field"><label>Prepared At</label><p>{formatDateTime(donation.preparationDate)}</p></div>
               <div className="detail-field"><label>Expiry Time</label><p>{formatDateTime(donation.expiryDate)}</p></div>
-              <div className="detail-field" style={{ gridColumn: '1/-1' }}>
-                <label>Expiry Countdown & Status</label>
-                <div style={{ marginTop: '0.25rem' }}>
-                  <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} />
+              {donation.status !== 'Completed' && (
+                <div className="detail-field" style={{ gridColumn: '1/-1' }}>
+                  <label>Expiry Countdown & Status</label>
+                  <div style={{ marginTop: '0.25rem' }}>
+                    <ExpiryBadge expiryDate={donation.expiryDate} showTime={true} status={donation.status} />
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="detail-field" style={{ gridColumn: '1/-1' }}><label>Pickup Location</label><p>📍 {donation.pickupAddress}</p></div>
               {donation.description && (
                 <div className="detail-field" style={{ gridColumn: '1/-1' }}><label>Description</label><p>{donation.description}</p></div>

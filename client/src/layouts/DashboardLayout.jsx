@@ -1,8 +1,9 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/common/Navbar';
 import OfflineBanner from '../components/common/OfflineBanner';
 import PushNotificationBanner from '../components/common/PushNotificationBanner';
+import useScrollReveal from '../utils/useScrollReveal';
 import {
   IconLayoutDashboard, IconPlus, IconList, IconUser,
   IconLeaf, IconMapPin, IconCheckCircle, IconBike,
@@ -52,6 +53,8 @@ const ROLE_COLOR = {
 const DashboardLayout = ({ role }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  useScrollReveal([location.pathname]);
   const links = SIDEBAR_CONFIG[role] || [];
 
   const handleLogout = () => { logout(); navigate('/'); };
@@ -131,7 +134,9 @@ const DashboardLayout = ({ role }) => {
           </div>
 
           <PushNotificationBanner />
-          <Outlet />
+          <div key={location.pathname} className="page-transition-wrapper">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

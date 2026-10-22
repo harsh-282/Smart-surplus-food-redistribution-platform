@@ -59,7 +59,7 @@ const AcceptedDonations = () => {
                   <td>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', alignItems: 'flex-start' }}>
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{formatDate(d.expiryDate)}</span>
-                      <ExpiryBadge expiryDate={d.expiryDate} showTime={true} />
+                      <ExpiryBadge expiryDate={d.expiryDate} showTime={true} status={d.status} />
                     </div>
                   </td>
                   <td>

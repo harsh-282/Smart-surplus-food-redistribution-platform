@@ -3,57 +3,147 @@ import api from '../../services/api';
 import VerificationBadge from '../../components/common/VerificationBadge';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
-const ShieldIcon = ({ className = 'w-5 h-5' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const ShieldIcon = ({ className = 'w-5 h-5', style = {}, size = 20, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
   </svg>
 );
 
-const BuildingIcon = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const BuildingIcon = ({ className = 'w-4 h-4', style = {}, size = 16, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m3 0h1m-4-8h1m-1-4h1m4 4h1m-1-4h1M9 16h1m4 0h1" />
   </svg>
 );
 
-const UserIcon = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const UserIcon = ({ className = 'w-4 h-4', style = {}, size = 16, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
   </svg>
 );
 
-const SearchIcon = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const SearchIcon = ({ className = 'w-4 h-4', style = {}, size = 16, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
   </svg>
 );
 
-const EyeIcon = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const EyeIcon = ({ className = 'w-4 h-4', style = {}, size = 16, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
   </svg>
 );
 
-const CheckIcon = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const CheckIcon = ({ className = 'w-4 h-4', style = {}, size = 14, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
   </svg>
 );
 
-const CrossIcon = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const CrossIcon = ({ className = 'w-4 h-4', style = {}, size = 14, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
 
-const BanIcon = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const BanIcon = ({ className = 'w-4 h-4', style = {}, size = 14, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
   </svg>
 );
 
-const RefreshIcon = ({ className = 'w-4 h-4' }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+const RefreshIcon = ({ className = 'w-4 h-4', style = {}, size = 16, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    className={className}
+    style={{ width: `${size}px`, height: `${size}px`, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle', ...style }}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    strokeWidth="2"
+    {...props}
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
   </svg>
 );
@@ -262,16 +352,16 @@ const VerificationManagement = () => {
 
           {/* Search Bar */}
           <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.5rem' }}>
-            <div style={{ position: 'relative', flex: 1 }}>
+            <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
               <input
                 type="text"
                 placeholder={`Search ${activeTab === 'ngo' ? 'NGO name, contact person' : 'volunteer name'}, email, phone...`}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="form-control"
-                style={{ paddingLeft: '2.5rem' }}
+                style={{ paddingLeft: '2.5rem', width: '100%' }}
               />
-              <SearchIcon className="w-4 h-4" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <SearchIcon size={16} className="w-4 h-4" style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
             </div>
             <button type="submit" className="btn btn-primary btn-sm">Search</button>
           </form>

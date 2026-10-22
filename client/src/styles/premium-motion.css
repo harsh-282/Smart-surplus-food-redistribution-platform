@@ -1,0 +1,830 @@
+/* ======================================================
+   FOODSHARE — PREMIUM 3D DEPTH, MOTION & MICRO-INTERACTIONS
+   - Eco-Premium Grass Green Theme (#55A630, #174D38, #103B2D)
+   - GPU-Accelerated Composited Transforms (60fps/120fps)
+   - Natural, purposeful, and restrained motion design
+   ====================================================== */
+
+/* ------------------------------------------------------
+   1. KEYFRAME ANIMATIONS
+   ------------------------------------------------------ */
+
+/* Smooth hero elements entrance */
+@keyframes heroEntranceFadeUp {
+  0% {
+    opacity: 0;
+    transform: perspective(1000px) translate3d(0, 26px, -15px);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1000px) translate3d(0, 0, 0);
+  }
+}
+
+/* Delicate hero badge drop */
+@keyframes heroBadgeDropIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -16px, 0) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Gentle organic floating for decorative botanical leaves */
+@keyframes botanicalFloat1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate3d(10px, -16px, 0) rotate(4deg);
+  }
+  66% {
+    transform: translate3d(-8px, -24px, 0) rotate(-3deg);
+  }
+}
+
+@keyframes botanicalFloat2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  40% {
+    transform: translate3d(-12px, -20px, 0) rotate(-5deg);
+  }
+  75% {
+    transform: translate3d(8px, -12px, 0) rotate(3deg);
+  }
+}
+
+/* Slow, subtle ambient background glow rotation */
+@keyframes ambientGlowRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Soft, natural pulse for decorative sprout accent */
+@keyframes decorativeSproutPulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.06) rotate(3deg);
+  }
+}
+
+/* ------------------------------------------------------
+   2. HOMEPAGE HERO EFFECTS & LAYERED DEPTH
+   ------------------------------------------------------ */
+
+.hero {
+  perspective: 1200px;
+}
+
+/* Hero Entrance Sequencing */
+.hero-badge {
+  animation: heroBadgeDropIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.hero-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(85, 166, 48, 0.25);
+  border-color: var(--green-400);
+}
+
+.hero-title {
+  animation: heroEntranceFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+  will-change: transform, opacity;
+}
+
+.hero-subtitle {
+  animation: heroEntranceFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
+  will-change: transform, opacity;
+}
+
+.hero-cta {
+  animation: heroEntranceFadeUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.36s both;
+  will-change: transform, opacity;
+}
+
+/* Decorative Botanical Elements Container */
+.hero-botanicals-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-botanical-leaf {
+  position: absolute;
+  color: var(--green-400);
+  opacity: 0.18;
+  filter: drop-shadow(0 4px 14px rgba(85, 166, 48, 0.25));
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero-botanical-leaf-1 {
+  top: 14%;
+  left: 6%;
+  width: 48px;
+  height: 48px;
+  animation: botanicalFloat1 13s ease-in-out infinite;
+}
+
+.hero-botanical-leaf-2 {
+  top: 22%;
+  right: 7%;
+  width: 56px;
+  height: 56px;
+  opacity: 0.16;
+  animation: botanicalFloat2 16s ease-in-out infinite;
+}
+
+.hero-botanical-leaf-3 {
+  bottom: 24%;
+  left: 10%;
+  width: 40px;
+  height: 40px;
+  opacity: 0.14;
+  animation: botanicalFloat2 14s ease-in-out 2s infinite;
+}
+
+.hero-botanical-leaf-4 {
+  bottom: 20%;
+  right: 9%;
+  width: 44px;
+  height: 44px;
+  opacity: 0.15;
+  animation: botanicalFloat1 15s ease-in-out 1s infinite;
+}
+
+/* Subtle rotating atmospheric ambient halo */
+.hero-ambient-halo {
+  position: absolute;
+  width: 650px;
+  height: 650px;
+  top: 5%;
+  left: 50%;
+  margin-left: -325px;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, rgba(23, 77, 56, 0.04) 50%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: ambientGlowRotate 45s linear infinite;
+  filter: blur(40px);
+}
+
+/* Hero Stats Glass Depth */
+.hero-stats {
+  animation: heroEntranceFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.48s both;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-stats:hover {
+  transform: translateY(-4px) scale3d(1.015, 1.015, 1.015);
+  box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 24px rgba(34, 197, 94, 0.2);
+  border-color: var(--green-border);
+}
+
+.hero-stat {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-stat:hover {
+  transform: translateY(-2px) scale(1.04);
+}
+
+.hero-stat-num {
+  transition: text-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.hero-stat:hover .hero-stat-num {
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.55);
+}
+
+/* ------------------------------------------------------
+   3. 3D CARD DEPTH & HOVER ELEVATIONS
+   ------------------------------------------------------ */
+
+/* Food Donation Cards */
+.donation-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease !important;
+}
+
+.donation-card:hover {
+  transform: perspective(1000px) translateY(-7px) translateZ(10px) !important;
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.65), 0 0 24px rgba(34, 197, 94, 0.22) !important;
+  border-color: var(--border-bright) !important;
+}
+
+.donation-card-img {
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.donation-card:hover .donation-card-img {
+  transform: scale(1.035) translateZ(6px);
+}
+
+/* How It Works Steps */
+.how-step {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease !important;
+}
+
+.how-step:hover {
+  transform: perspective(1000px) translateY(-8px) translateZ(12px) !important;
+  box-shadow: 0 22px 44px -12px rgba(0, 0, 0, 0.6), 0 0 28px rgba(34, 197, 94, 0.24) !important;
+  border-color: var(--green-border) !important;
+}
+
+.how-step-num {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease !important;
+}
+
+.how-step:hover .how-step-num {
+  transform: scale(1.08) translateZ(14px);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.45) !important;
+}
+
+.how-step-icon {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background var(--transition-base), border-color var(--transition-base), color var(--transition-base) !important;
+}
+
+.how-step:hover .how-step-icon {
+  transform: scale(1.1) translateZ(12px);
+}
+
+/* Role Feature Cards */
+.role-feature-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease !important;
+}
+
+.role-feature-card:hover {
+  transform: perspective(1000px) translateY(-9px) scale3d(1.015, 1.015, 1.015) translateZ(14px) !important;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.65), 0 0 28px rgba(34, 197, 94, 0.22) !important;
+  border-color: var(--border-bright) !important;
+}
+
+.role-feature-icon {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.role-feature-card:hover .role-feature-icon {
+  transform: scale(1.12) rotate(-3deg) translateZ(18px) !important;
+}
+
+/* Stat Cards & Dashboard Overview Cards */
+.stat-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease !important;
+}
+
+.stat-card:hover {
+  transform: perspective(1000px) translateY(-4px) translateZ(8px) !important;
+  box-shadow: 0 14px 28px -8px rgba(0, 0, 0, 0.5), 0 0 18px rgba(34, 197, 94, 0.16) !important;
+  border-color: var(--green-border) !important;
+}
+
+.stat-icon {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.1) translateZ(10px) !important;
+}
+
+/* General Interactive Cards (.card-hover) */
+.card-hover {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease, border-color 0.25s ease !important;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(34, 197, 94, 0.18) !important;
+}
+
+/* ------------------------------------------------------
+   4. CTA BANNER & BOTANICAL ACCENTS
+   ------------------------------------------------------ */
+
+.cta-banner {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+}
+
+.cta-banner:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 48px -12px rgba(0, 0, 0, 0.6), 0 0 32px rgba(34, 197, 94, 0.2);
+}
+
+.cta-banner-icon {
+  animation: decorativeSproutPulse 6s ease-in-out infinite;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ------------------------------------------------------
+   5. BUTTONS & MICRO-INTERACTIONS
+   ------------------------------------------------------ */
+
+/* Primary Button Lift & Press Feedback */
+.btn {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+  will-change: transform;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--green-400) !important;
+  outline-offset: 3px !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2.5px) !important;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.42), 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.985) !important;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3) !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.18) !important;
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.985) !important;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25) !important;
+}
+
+.btn-danger:active:not(:disabled) {
+  transform: translateY(0.5px) scale(0.985) !important;
+}
+
+.role-feature-btn:hover {
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35) !important;
+}
+
+.role-feature-btn:active {
+  transform: translateY(0.5px) scale(0.985) !important;
+}
+
+/* Form Input Micro-Focus Lift */
+.form-control {
+  transition: border-color var(--transition-fast), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), background var(--transition-fast), transform 0.2s ease !important;
+}
+
+.form-control:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px var(--green-glow), 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* ------------------------------------------------------
+   6. VIEWPORT SCROLL REVEAL & PAGE TRANSITION UTILITIES
+   ------------------------------------------------------ */
+
+/* Smooth, lightweight page transitions on route change */
+.page-transition-wrapper {
+  animation: pageFadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  width: 100%;
+  will-change: opacity, transform;
+}
+
+@keyframes pageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Viewport Scroll Reveal Variants */
+.reveal-on-scroll,
+.reveal-fade-up {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.95) translate3d(0, 16px, 0);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-slide-left {
+  opacity: 0;
+  transform: translate3d(-24px, 0, 0);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-slide-right {
+  opacity: 0;
+  transform: translate3d(24px, 0, 0);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-revealed,
+.reveal-fade-up.is-revealed,
+.reveal-scale.is-revealed,
+.reveal-slide-left.is-revealed,
+.reveal-slide-right.is-revealed {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) scale(1) !important;
+}
+
+/* Safeguard: Inside dashboard layouts and views, never allow async content to be stuck hidden */
+.dashboard-layout .reveal-on-scroll,
+.dashboard-layout .reveal-fade-up,
+.dashboard-layout .reveal-scale,
+.dashboard-layout .reveal-slide-left,
+.dashboard-layout .reveal-slide-right,
+.dashboard-main .reveal-on-scroll,
+.dashboard-main .reveal-fade-up,
+.dashboard-main .reveal-scale,
+.dashboard-main .reveal-slide-left,
+.dashboard-main .reveal-slide-right {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Stagger Delays for Grid Children */
+.stagger-1 { transition-delay: 0.06s; }
+.stagger-2 { transition-delay: 0.12s; }
+.stagger-3 { transition-delay: 0.18s; }
+.stagger-4 { transition-delay: 0.24s; }
+.stagger-5 { transition-delay: 0.30s; }
+.stagger-6 { transition-delay: 0.36s; }
+
+/* ------------------------------------------------------
+   7. SWIPE & TOUCH-FRIENDLY INTERACTIVE CAROUSEL
+   ------------------------------------------------------ */
+
+.swipe-carousel-container {
+  position: relative;
+  width: 100%;
+  outline: none;
+}
+
+.swipe-carousel-container:focus-visible {
+  outline: 2px solid var(--green-400);
+  outline-offset: 4px;
+  border-radius: var(--radius-lg);
+}
+
+.swipe-track {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding: 0.5rem 0.25rem 1.25rem;
+  scrollbar-width: none;
+}
+
+.swipe-track::-webkit-scrollbar {
+  display: none;
+}
+
+.swipe-item {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  min-width: 0;
+  transform-style: preserve-3d;
+}
+
+@media (min-width: 640px) {
+  .swipe-item {
+    flex: 0 0 calc(50% - 0.75rem);
+    scroll-snap-align: start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .swipe-item {
+    flex: 0 0 calc(33.333% - 1rem);
+    scroll-snap-align: start;
+  }
+}
+
+.swipe-nav-arrow {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.swipe-nav-arrow:hover:not(:disabled) {
+  background: var(--green-500);
+  color: #FFFFFF;
+  border-color: var(--green-500);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 8px 24px rgba(85, 166, 48, 0.45);
+}
+
+.swipe-nav-arrow:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.96);
+}
+
+.swipe-nav-arrow:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.swipe-nav-prev {
+  left: -20px;
+}
+
+.swipe-nav-next {
+  right: -20px;
+}
+
+@media (max-width: 768px) {
+  .swipe-nav-prev { left: -6px; }
+  .swipe-nav-next { right: -6px; }
+}
+
+.swipe-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.swipe-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border-color);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.swipe-dot.active {
+  width: 24px;
+  background: var(--green-500);
+  box-shadow: 0 0 10px rgba(85, 166, 48, 0.45);
+}
+
+/* ------------------------------------------------------
+   8. MODALS, NOTIFICATIONS & MICRO-INTERACTIONS
+   ------------------------------------------------------ */
+
+@keyframes modalBackdropFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes modalZoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translate3d(0, 16px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+.modal-backdrop-animated {
+  animation: modalBackdropFadeIn 0.25s ease-out both;
+  backdrop-filter: blur(8px);
+}
+
+.modal-card-animated {
+  animation: modalZoomIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.75), 0 0 32px rgba(85, 166, 48, 0.16) !important;
+}
+
+/* Alert Slide-Down Animation */
+@keyframes alertSlideDown {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.alert {
+  animation: alertSlideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Button SVG Icon Contextual Movement */
+.btn svg,
+.btn-primary svg {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn:hover svg,
+.btn-primary:hover svg {
+  transform: translateX(3px);
+}
+
+/* Navigation Link Underline & Icon Hover */
+.navbar-link svg {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-link:hover svg {
+  transform: translateY(-1.5px);
+}
+
+/* Dashboard Sidebar Links Hover Lift & Icon Scale */
+.sidebar-link {
+  transition: background var(--transition-fast), color var(--transition-fast), transform 0.22s ease, border-left-color var(--transition-fast) !important;
+}
+
+.sidebar-link:hover {
+  transform: translateX(3px);
+}
+
+.sidebar-icon {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-link:hover .sidebar-icon {
+  transform: scale(1.15);
+}
+
+/* Micro-Pulse for Status Badges */
+@keyframes statusGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(85, 166, 48, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(85, 166, 48, 0);
+  }
+}
+
+.badge-available,
+.status-badge.available {
+  animation: statusGlowPulse 3s ease-in-out infinite;
+}
+
+/* Timeline Current Step Pulse */
+@keyframes timelineDotPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.45);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(249, 115, 22, 0);
+    transform: scale(1.05);
+  }
+}
+
+.timeline-dot.current {
+  animation: timelineDotPulse 2.5s ease-in-out infinite;
+}
+
+/* ------------------------------------------------------
+   9. LIGHT MODE ADAPTATIONS
+   ------------------------------------------------------ */
+
+[data-theme='light'] .hero-botanical-leaf {
+  color: var(--green-600);
+  opacity: 0.14;
+}
+
+[data-theme='light'] .hero-ambient-halo {
+  background: radial-gradient(circle, rgba(85, 166, 48, 0.08) 0%, rgba(23, 77, 56, 0.03) 50%, transparent 70%);
+}
+
+[data-theme='light'] .hero-stats:hover {
+  box-shadow: 0 16px 36px -10px rgba(23, 77, 56, 0.12), 0 0 20px rgba(85, 166, 48, 0.18);
+}
+
+[data-theme='light'] .donation-card:hover {
+  box-shadow: 0 18px 36px -10px rgba(23, 77, 56, 0.12), 0 0 20px rgba(85, 166, 48, 0.16) !important;
+}
+
+[data-theme='light'] .how-step:hover {
+  box-shadow: 0 18px 36px -10px rgba(23, 77, 56, 0.12), 0 0 20px rgba(85, 166, 48, 0.16) !important;
+}
+
+[data-theme='light'] .role-feature-card:hover {
+  box-shadow: 0 20px 40px -10px rgba(23, 77, 56, 0.14), 0 0 20px rgba(85, 166, 48, 0.16) !important;
+}
+
+[data-theme='light'] .stat-card:hover {
+  box-shadow: 0 12px 26px -8px rgba(23, 77, 56, 0.1), 0 0 16px rgba(85, 166, 48, 0.15) !important;
+}
+
+[data-theme='light'] .swipe-nav-arrow {
+  box-shadow: 0 4px 14px rgba(23, 77, 56, 0.12);
+}
+
+[data-theme='light'] .modal-card-animated {
+  box-shadow: 0 24px 60px -12px rgba(23, 77, 56, 0.18), 0 0 32px rgba(85, 166, 48, 0.12) !important;
+}
+
+/* ------------------------------------------------------
+   10. ACCESSIBILITY & REDUCED MOTION SAFEGUARDS
+   ------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+  }
+
+  .reveal-on-scroll,
+  .reveal-fade-up,
+  .reveal-scale,
+  .reveal-slide-left,
+  .reveal-slide-right,
+  .page-transition-wrapper {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+}
+
+/* Disable hover elevations on touch devices (no hover) */
+@media (hover: none) {
+  .donation-card:hover,
+  .how-step:hover,
+  .role-feature-card:hover,
+  .stat-card:hover,
+  .hero-stats:hover,
+  .card-hover:hover {
+    transform: none !important;
+  }
+
+  .hero-botanical-leaf {
+    animation: none !important;
+  }
+}
+
+/* Disable hover elevations on touch devices (no hover) */
+@media (hover: none) {
+  .donation-card:hover,
+  .how-step:hover,
+  .role-feature-card:hover,
+  .stat-card:hover,
+  .hero-stats:hover,
+  .card-hover:hover {
+    transform: none !important;
+  }
+
+  .hero-botanical-leaf {
+    animation: none !important;
+  }
+}

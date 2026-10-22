@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
-import { IconLeaf, IconHome, IconInfo, IconUser, IconBike, IconBuilding, IconCrown, IconSprout } from './Icons';
+import Logo from './Logo';
+import { IconLeaf, IconHome, IconInfo, IconUser, IconBike, IconBuilding, IconCrown } from './Icons';
 
 const Footer = () => (
   <footer className="footer">
     <div className="footer-inner">
       <div>
-        <div className="footer-brand">
-          <IconLeaf size={20} style={{ color: 'var(--green-400)' }} />
-          FoodShare
+        <div className="footer-brand" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Logo size={24} />
+          <span className="footer-brand-text">Food<span>Share</span></span>
         </div>
         <p className="footer-desc">
           Reducing food waste by connecting donors, NGOs, and volunteers
@@ -53,11 +54,7 @@ const Footer = () => (
       </div>
     </div>
     <div className="footer-bottom">
-      <span className="footer-copy">© 2024 FoodShare. Built for reducing food waste.</span>
-      <span className="footer-copy" style={{ display:'flex', alignItems:'center', gap:'0.35rem' }}>
-        <IconSprout size={13} style={{ color: 'var(--green-400)' }} />
-        Mini Project — B.Tech AI &amp; DS
-      </span>
+      <span className="footer-copy">© 2026 FoodShare. Built for reducing food waste.</span>
     </div>
   </footer>
 );

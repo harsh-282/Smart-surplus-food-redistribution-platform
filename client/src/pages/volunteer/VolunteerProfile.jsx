@@ -97,7 +97,7 @@ const VolunteerProfile = () => {
           <div style={{
             width: 80, height: 80, borderRadius: '50%',
             background: 'linear-gradient(135deg, var(--status-assigned), #6b21a8)',
-            display: 'flex', alignItems: 'center', justify: 'center', fontSize: '1.75rem', fontWeight: 800, color: '#fff', margin: '0 auto 1rem'
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', fontWeight: 800, color: '#fff', margin: '0 auto 1rem'
           }}>
             {getInitials(form.name)}
           </div>

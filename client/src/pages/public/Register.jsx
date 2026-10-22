@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Logo from '../../components/common/Logo';
 import {
   IconLeaf, IconAlertTriangle, IconUtensils, IconBuilding, IconBike,
   IconUser, IconPhone, IconMail, IconLock, IconMapPin
@@ -54,7 +55,7 @@ const Register = () => {
       <div className="auth-card" style={{ maxWidth: 520 }}>
         <div className="auth-logo">
           <div className="auth-logo-icon">
-            <IconLeaf size={28} />
+            <Logo size={68} />
           </div>
         </div>
         <h1 className="auth-title">Create Account</h1>

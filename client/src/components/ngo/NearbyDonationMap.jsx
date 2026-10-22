@@ -167,7 +167,7 @@ const NearbyDonationMap = ({
               fontSize: '0.8rem',
               display: 'flex',
               alignItems: 'center',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               gap: '0.5rem',
               flexWrap: 'wrap',
             }}
@@ -193,7 +193,7 @@ const NearbyDonationMap = ({
           borderTop: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
-          justify: 'space-between',
+          justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '0.75rem',
           fontSize: '0.8rem',

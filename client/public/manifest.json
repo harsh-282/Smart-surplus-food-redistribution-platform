@@ -4,27 +4,27 @@
   "description": "Connecting food donors, NGOs, and volunteers to reduce food waste and support communities.",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "type": "image/svg+xml",
-      "sizes": "any",
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "32x32",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192.png",
+      "src": "/logo-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/logo-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
     }
   ],
   "start_url": "/",
-  "background_color": "#0f172a",
-  "theme_color": "#16a34a",
+  "background_color": "#103B2D",
+  "theme_color": "#174D38",
   "display": "standalone",
   "orientation": "portrait-primary",
   "categories": ["lifestyle", "social", "productivity"]

@@ -11,6 +11,7 @@ const QRDonationModal = ({ donation, isOpen, onClose }) => {
 
   return (
     <div
+      className="modal-backdrop-animated"
       style={{
         position: 'fixed',
         top: 0,
@@ -27,7 +28,7 @@ const QRDonationModal = ({ donation, isOpen, onClose }) => {
       onClick={onClose}
     >
       <div
-        className="card"
+        className="card modal-card-animated"
         style={{
           maxWidth: '450px',
           width: '100%',

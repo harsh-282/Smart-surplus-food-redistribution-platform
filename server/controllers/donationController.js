@@ -167,10 +167,13 @@ const getDonations = async (req, res) => {
     // Expiry Status Filter
     if (expiryStatus === 'Fresh') {
       filter.expiryDate = { $gt: next24h };
+      if (!status || status === 'All') filter.status = { $nin: ['Completed', 'Delivered'] };
     } else if (expiryStatus === 'Near Expiry' || expiryStatus === 'Urgent' || urgentOnly === 'true') {
       filter.expiryDate = { $gt: now, $lte: next24h };
+      if (!status || status === 'All') filter.status = { $nin: ['Completed', 'Delivered'] };
     } else if (expiryStatus === 'Expired') {
       filter.expiryDate = { $lte: now };
+      if (!status || status === 'All') filter.status = { $nin: ['Completed', 'Delivered'] };
     }
 
     // Role specific rules
