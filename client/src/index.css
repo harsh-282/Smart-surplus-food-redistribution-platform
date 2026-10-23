@@ -3840,3 +3840,23 @@ table {
 /* Home join section */
 .home-join-section { background: var(--bg-secondary); border-top: 1px solid var(--border-color); }
 [data-theme='light'] .home-join-section { background: #E5F2DE; border-top-color: #DDE6D8; }
+
+/* Leaflet Map & Popup Styling */
+.leaflet-container {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  z-index: 1;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  padding: 2px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  background: var(--bg-card, #ffffff) !important;
+  color: var(--text-primary, #0f172a) !important;
+}
+.leaflet-popup-content {
+  margin: 10px 12px !important;
+  line-height: 1.5 !important;
+}
+.leaflet-popup-tip {
+  background: var(--bg-card, #ffffff) !important;
+}
