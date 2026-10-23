@@ -25,7 +25,7 @@ const CATEGORIES = [
 const RADIUS_OPTIONS = [
   { label: 'All Distances', value: 'All' },
   { label: 'Within 5 km', value: '5' },
-  { label: 'Within 10 km (Default)', value: '10' },
+  { label: 'Within 10 km', value: '10' },
   { label: 'Within 25 km', value: '25' },
   { label: 'Within 50 km', value: '50' },
 ];
@@ -56,10 +56,10 @@ const NearbyDonationsPage = () => {
   const [accepting, setAccepting] = useState(null);
   const [message, setMessage] = useState('');
 
-  // Filter States (Default radius 10 km per requirement)
+  // Filter States (Default radius: All Distances)
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
-  const [maxRadiusKm, setMaxRadiusKm] = useState('10');
+  const [maxRadiusKm, setMaxRadiusKm] = useState('All');
   const [expiryFilter, setExpiryFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
 
@@ -185,7 +185,7 @@ const NearbyDonationsPage = () => {
   const handleClearFilters = () => {
     setSearch('');
     setCategory('All');
-    setMaxRadiusKm('10');
+    setMaxRadiusKm('All');
     setExpiryFilter('All');
     setPriorityFilter('All');
   };
@@ -224,7 +224,7 @@ const NearbyDonationsPage = () => {
   const hasActiveFilters =
     search !== '' ||
     category !== 'All' ||
-    maxRadiusKm !== '10' ||
+    maxRadiusKm !== 'All' ||
     expiryFilter !== 'All' ||
     priorityFilter !== 'All';
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import PriorityBadge from '../common/PriorityBadge';
@@ -26,6 +27,7 @@ const NearbyDonationMap = ({
   onSelectDonation = () => {},
   height = 'clamp(320px, 50vh, 500px)',
 }) => {
+  const navigate = useNavigate();
   const mapRef = useRef(null);
   const leafletContainerRef = useRef(null);
   const leafletMapRef = useRef(null);
@@ -173,7 +175,14 @@ const NearbyDonationMap = ({
       const popupContent = `
         <div style="font-family: inherit; font-size: 13px; line-height: 1.45; min-width: 210px; max-width: 260px;">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 4px;">
-            <strong style="font-size: 14px; color: #0f172a; text-transform: capitalize;">${d.foodName}</strong>
+            <a id="view-map-title-${d._id}" href="/ngo/donations/${d._id}" style="
+              font-size: 14px;
+              font-weight: 800;
+              color: #0f172a;
+              text-transform: capitalize;
+              text-decoration: none;
+              cursor: pointer;
+            " title="Click to view donation details">${d.foodName} ↗</a>
             <span style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${d.category || 'Food'}</span>
           </div>
           <div style="font-size: 11px; font-weight: 700; color: ${color}; margin-bottom: 6px;">
@@ -197,18 +206,19 @@ const NearbyDonationMap = ({
               text-align: center;
               display: inline-block;
             ">🗺️ Directions</a>
-            <button id="inspect-map-btn-${d._id}" style="
+            <a id="view-map-btn-${d._id}" href="/ngo/donations/${d._id}" style="
               flex: 1;
               background: #55A630;
-              color: #ffffff;
-              border: none;
+              color: #ffffff !important;
+              text-decoration: none;
               padding: 6px 8px;
               border-radius: 6px;
               font-size: 11px;
               font-weight: 700;
               cursor: pointer;
               text-align: center;
-            ">🤝 Inspect</button>
+              display: inline-block;
+            ">👁️ View Donation</a>
           </div>
         </div>
       `;
@@ -216,10 +226,19 @@ const NearbyDonationMap = ({
       marker.bindPopup(popupContent);
 
       marker.on('popupopen', () => {
-        const btn = document.getElementById(`inspect-map-btn-${d._id}`);
+        onSelectDonation(d);
+        const btn = document.getElementById(`view-map-btn-${d._id}`);
         if (btn) {
-          btn.onclick = () => {
-            onSelectDonation(d);
+          btn.onclick = (e) => {
+            e.preventDefault();
+            navigate(`/ngo/donations/${d._id}`);
+          };
+        }
+        const titleLink = document.getElementById(`view-map-title-${d._id}`);
+        if (titleLink) {
+          titleLink.onclick = (e) => {
+            e.preventDefault();
+            navigate(`/ngo/donations/${d._id}`);
           };
         }
       });
