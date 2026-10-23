@@ -48,7 +48,7 @@ const OTPVerificationCard = ({ donation, type = 'pickup', onVerified }) => {
         border: isVerified
           ? '2px solid var(--green-500, #22c55e)'
           : '2px solid var(--orange-400, #f97316)',
-        background: 'var(--bg-primary, #1e293b)',
+        background: 'var(--bg-card, #FFFFFF)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>

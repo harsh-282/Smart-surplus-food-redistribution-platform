@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import api from '../../services/api';
@@ -12,6 +13,23 @@ const QRScannerModal = ({ isOpen, onClose }) => {
   const [scanError, setScanError] = useState('');
   const scannerRef = useRef(null);
   const scannerRegionId = 'qr-reader-region';
+
+  // Body scroll lock & Escape key close
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isOpen, onClose]);
 
   // Current logged in user role
   const userStr = localStorage.getItem('foodshare_user');
@@ -127,7 +145,7 @@ const QRScannerModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop-animated"
       style={{
@@ -137,11 +155,14 @@ const QRScannerModal = ({ isOpen, onClose }) => {
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.85)',
-        zIndex: 9999,
+        zIndex: 99999,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '1rem',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        padding: '2rem 1rem',
+        boxSizing: 'border-box',
       }}
       onClick={onClose}
     >
@@ -150,12 +171,12 @@ const QRScannerModal = ({ isOpen, onClose }) => {
         style={{
           maxWidth: '480px',
           width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          background: 'var(--bg-primary, #1e293b)',
+          margin: 'auto',
+          background: 'var(--bg-card, #FFFFFF)',
           borderRadius: '16px',
           padding: '1.5rem',
           position: 'relative',
+          boxSizing: 'border-box',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -189,7 +210,9 @@ const QRScannerModal = ({ isOpen, onClose }) => {
           id={scannerRegionId}
           style={{
             width: '100%',
-            minHeight: '230px',
+            maxWidth: '100%',
+            minHeight: '220px',
+            maxHeight: '300px',
             background: '#000000',
             borderRadius: '12px',
             overflow: 'hidden',
@@ -242,7 +265,8 @@ const QRScannerModal = ({ isOpen, onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

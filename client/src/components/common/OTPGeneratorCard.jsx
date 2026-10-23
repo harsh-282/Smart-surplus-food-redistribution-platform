@@ -14,6 +14,40 @@ const OTPGeneratorCard = ({ donation, type = 'pickup', onOtpStatusChange }) => {
   const isVerified = isPickup ? donation?.pickupOtpUsed : donation?.deliveryOtpUsed;
   const verifiedAt = isPickup ? donation?.pickupOtpVerifiedAt : donation?.deliveryOtpVerifiedAt;
 
+  // Restore active OTP from sessionStorage on page load or refresh
+  useEffect(() => {
+    try {
+      const storageKey = `foodshare_otp_${donation?._id}_${type}`;
+      const saved = sessionStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.otp && parsed.expiresAt) {
+          const remaining = Math.max(0, Math.floor((new Date(parsed.expiresAt).getTime() - Date.now()) / 1000));
+          if (remaining > 0) {
+            setOtp(parsed.otp);
+            setExpiresAt(parsed.expiresAt);
+            setTimeLeft(remaining);
+          } else {
+            sessionStorage.removeItem(storageKey);
+          }
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [donation?._id, type]);
+
+  // Clear cached OTP when verified
+  useEffect(() => {
+    if (isVerified) {
+      try {
+        sessionStorage.removeItem(`foodshare_otp_${donation?._id}_${type}`);
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [isVerified, donation?._id, type]);
+
   // Live Timer Effect
   useEffect(() => {
     if (!expiresAt) return;
@@ -52,7 +86,15 @@ const OTPGeneratorCard = ({ donation, type = 'pickup', onOtpStatusChange }) => {
         setExpiresAt(res.data.expiresAt);
         setTimeLeft(300); // 5 minutes
         setCooldown(30); // 30s cooldown
-        setSuccessMsg(`🔐 New 6-Digit ${isPickup ? 'Pickup' : 'Delivery'} OTP generated! Share this verbally with the volunteer.`);
+        try {
+          sessionStorage.setItem(
+            `foodshare_otp_${donation._id}_${type}`,
+            JSON.stringify({ otp: res.data.otp, expiresAt: res.data.expiresAt })
+          );
+        } catch (e) {
+          // ignore
+        }
+        setSuccessMsg(`📦 New 6-Digit ${isPickup ? 'Pickup' : 'Delivery'} OTP generated! Share this verbally with the volunteer.`);
         if (onOtpStatusChange) onOtpStatusChange();
       }
     } catch (err) {
@@ -78,13 +120,13 @@ const OTPGeneratorCard = ({ donation, type = 'pickup', onOtpStatusChange }) => {
         border: isVerified
           ? '2px solid var(--green-500, #22c55e)'
           : '2px solid var(--primary-glow, rgba(34, 197, 94, 0.3))',
-        background: 'var(--bg-primary, #1e293b)',
+        background: 'var(--bg-card, #FFFFFF)',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div>
           <h3 style={{ fontWeight: 800, fontSize: '1.1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            🔐 {isPickup ? 'Pickup Handover OTP' : 'Delivery Handover OTP'}
+            📦 {isPickup ? 'Pickup Handover OTP' : 'Delivery Handover OTP'}
           </h3>
           <p className="text-muted text-sm" style={{ marginTop: '0.2rem', marginBottom: 0 }}>
             {isPickup
@@ -159,7 +201,7 @@ const OTPGeneratorCard = ({ donation, type = 'pickup', onOtpStatusChange }) => {
                 ? `Please wait ${cooldown}s`
                 : otp
                 ? '🔄 Regenerate New OTP'
-                : `🔐 Generate ${isPickup ? 'Pickup' : 'Delivery'} OTP`}
+                : `📦 Generate ${isPickup ? 'Pickup' : 'Delivery'} OTP`}
             </button>
           </div>
         </div>

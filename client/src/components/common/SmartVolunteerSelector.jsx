@@ -73,16 +73,18 @@ const SmartVolunteerSelector = ({ donationId, donation, onAssigned }) => {
       {error && <div className="alert alert-error mb-3">⚠️ {error}</div>}
 
       {/* Mode Switcher */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-color, #e2e8f0)', paddingBottom: '0.75rem' }}>
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-color, #e2e8f0)', paddingBottom: '0.75rem', flexWrap: 'wrap' }}>
         <button
           onClick={() => setViewMode('smart')}
           className={`btn btn-sm ${viewMode === 'smart' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ flex: '1 1 auto', textAlign: 'center', whiteSpace: 'normal', minHeight: '38px' }}
         >
           ⭐ Smart Recommendations ({recommended.length})
         </button>
         <button
           onClick={() => setViewMode('manual')}
           className={`btn btn-sm ${viewMode === 'manual' ? 'btn-primary' : 'btn-secondary'}`}
+          style={{ flex: '1 1 auto', textAlign: 'center', whiteSpace: 'normal', minHeight: '38px' }}
         >
           📋 Manual Selection ({allVolunteers.length})
         </button>
@@ -121,15 +123,15 @@ const SmartVolunteerSelector = ({ donationId, donation, onAssigned }) => {
                       background: index === 0 ? 'rgba(22, 163, 74, 0.03)' : 'var(--bg-card, #ffffff)',
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                      <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                      <div style={{ flex: '1 1 200px', minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                           <strong style={{ fontSize: '1.05rem' }}>🚴 {volName}</strong>
-                          <span className="badge" style={{ background: levelBg, color: levelColor, border: `1px solid ${levelColor}`, fontWeight: 700 }}>
+                          <span className="badge" style={{ background: levelBg, color: levelColor, border: `1px solid ${levelColor}`, fontWeight: 700, whiteSpace: 'normal', textAlign: 'left' }}>
                             {rankBadge} • {suitability.suitabilityPercentage}% Suitability
                           </span>
                         </div>
-                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           📞 {vol.phone || 'N/A'} | 📍 {vol.address || 'Address registered'}
                         </p>
                       </div>
@@ -138,7 +140,7 @@ const SmartVolunteerSelector = ({ donationId, donation, onAssigned }) => {
                         onClick={() => handleAssign(volUserId, volName)}
                         className="btn btn-primary btn-sm"
                         disabled={assigningId === volUserId}
-                        style={{ minWidth: '130px' }}
+                        style={{ minWidth: '120px', flex: '1 1 auto' }}
                       >
                         {assigningId === volUserId ? 'Assigning...' : 'Assign Volunteer'}
                       </button>
@@ -146,14 +148,14 @@ const SmartVolunteerSelector = ({ donationId, donation, onAssigned }) => {
 
                     {/* Chips info */}
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '0.6rem 0 0.5rem 0' }}>
-                      <span className="badge badge-secondary" style={{ fontSize: '0.75rem' }}>
+                      <span className="badge badge-secondary" style={{ fontSize: '0.75rem', whiteSpace: 'normal', textAlign: 'left' }}>
                         ⚡ {vol.activeDeliveriesCount} Active Task{vol.activeDeliveriesCount === 1 ? '' : 's'}
                       </span>
-                      <span className="badge badge-secondary" style={{ fontSize: '0.75rem' }}>
+                      <span className="badge badge-secondary" style={{ fontSize: '0.75rem', whiteSpace: 'normal', textAlign: 'left' }}>
                         🛵 Vehicle: {vol.vehicleType}
                       </span>
                       {suitability.distanceKm != null && (
-                        <span className="badge badge-primary" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+                        <span className="badge badge-primary" style={{ fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'normal', textAlign: 'left' }}>
                           📍 ~{suitability.distanceKm.toFixed(1)} km to pickup
                         </span>
                       )}

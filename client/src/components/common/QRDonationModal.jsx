@@ -1,6 +1,25 @@
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import QRDonationCode from './QRDonationCode';
 
 const QRDonationModal = ({ donation, isOpen, onClose }) => {
+  // Body scroll lock & Escape key close
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') onClose();
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isOpen, onClose]);
+
   if (!isOpen || !donation) return null;
 
   const handlePrint = () => {
@@ -9,7 +28,7 @@ const QRDonationModal = ({ donation, isOpen, onClose }) => {
 
   const qrId = donation.qrDonationId || donation._id;
 
-  return (
+  return createPortal(
     <div
       className="modal-backdrop-animated"
       style={{
@@ -18,12 +37,15 @@ const QRDonationModal = ({ donation, isOpen, onClose }) => {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.75)',
-        zIndex: 9999,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        zIndex: 99999,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '1rem',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        padding: '2rem 1rem',
+        boxSizing: 'border-box',
       }}
       onClick={onClose}
     >
@@ -32,12 +54,12 @@ const QRDonationModal = ({ donation, isOpen, onClose }) => {
         style={{
           maxWidth: '450px',
           width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          background: 'var(--bg-primary, #1e293b)',
+          margin: 'auto',
+          background: 'var(--bg-card, #FFFFFF)',
           borderRadius: '16px',
           padding: '1.5rem',
           position: 'relative',
+          boxSizing: 'border-box',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -91,7 +113,8 @@ const QRDonationModal = ({ donation, isOpen, onClose }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

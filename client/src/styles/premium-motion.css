@@ -645,6 +645,25 @@
   box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.75), 0 0 32px rgba(85, 166, 48, 0.16) !important;
 }
 
+/* QR Camera Scanner Viewport Constraint */
+#qr-reader-region {
+  border-radius: 12px;
+  overflow: hidden !important;
+}
+
+#qr-reader-region video {
+  max-width: 100% !important;
+  max-height: 260px !important;
+  object-fit: cover !important;
+  border-radius: 12px !important;
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+#qr-reader-region__scan_region {
+  max-height: 260px !important;
+}
+
 /* Alert Slide-Down Animation */
 @keyframes alertSlideDown {
   0% {

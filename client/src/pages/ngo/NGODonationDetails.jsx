@@ -144,7 +144,7 @@ const NGODonationDetails = () => {
       {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
 
       {/* Delivery Handover OTP Generator for NGO */}
-      {['Picked Up', 'Delivered', 'Completed'].includes(donation.status) && (
+      {['Accepted', 'Pickup Assigned', 'Picked Up', 'Delivered', 'Completed'].includes(donation.status) && (
         <div style={{ marginBottom: '1.5rem' }}>
           <OTPGeneratorCard
             donation={donation}

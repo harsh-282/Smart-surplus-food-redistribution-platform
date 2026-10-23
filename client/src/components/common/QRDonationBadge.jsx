@@ -20,17 +20,20 @@ const QRDonationBadge = ({ donation }) => {
           borderRadius: '8px',
           border: '1px solid var(--border-color, #e2e8f0)',
           fontSize: '0.8rem',
+          maxWidth: '100%',
+          flexWrap: 'wrap',
+          boxSizing: 'border-box',
         }}
       >
         <span style={{ fontSize: '0.9rem' }}>📷</span>
-        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)' }}>
+        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--text-primary)', wordBreak: 'break-all' }}>
           {qrId}
         </span>
         <button
           type="button"
           onClick={() => setShowModal(true)}
           className="btn btn-secondary btn-sm"
-          style={{ padding: '0.1rem 0.4rem', fontSize: '0.725rem', marginLeft: '0.2rem' }}
+          style={{ padding: '0.1rem 0.4rem', fontSize: '0.725rem', marginLeft: '0.2rem', whiteSpace: 'nowrap' }}
           title="View & Download QR Code"
         >
           View QR

@@ -242,10 +242,10 @@ const generateDeliveryOtp = async (req, res) => {
     }
 
     // Status check
-    if (!['Picked Up', 'Delivered'].includes(donation.status)) {
+    if (!['Accepted', 'Pickup Assigned', 'Picked Up', 'Delivered'].includes(donation.status)) {
       return res.status(400).json({
         success: false,
-        message: `Delivery OTP can only be generated after food is picked up (Current status: ${donation.status}).`,
+        message: `Delivery OTP can only be generated for accepted donations (Current status: ${donation.status}).`,
       });
     }
 

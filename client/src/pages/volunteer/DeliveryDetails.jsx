@@ -171,7 +171,7 @@ const DeliveryDetails = () => {
           )}
 
           {/* Delivery Handover OTP Verification Card */}
-          {donation.status === 'Picked Up' && (
+          {['Picked Up', 'Delivered'].includes(donation.status) && (
             <div style={{ marginBottom: '1.25rem' }}>
               <OTPVerificationCard
                 donation={donation}
